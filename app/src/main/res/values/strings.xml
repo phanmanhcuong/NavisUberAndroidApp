@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">NavisUber</string>
+    <string name="tv_title">Nhập số điên thoại</string>
+    <string name="submit_phone_number">Xác Nhận</string>
+    <string name="phone_number">phoneNumber</string>
+    <string name="start">Điểm đón</string>
+    <string name="destination">Điểm đến</string>
+</resources>
