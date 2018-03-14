@@ -41,8 +41,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         ggMapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap ggMap) {
-                askPermissionsAndShowMyLocation();
                 googleMap = ggMap;
+                askPermissionsAndShowMyLocation();
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 googleMap.getUiSettings().setZoomControlsEnabled(true);
                 if(ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -127,17 +127,17 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     }
 
     //tim nhà cung cấp vị trí
-    private String getEnabledLocationProvider() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        // Tiêu chí để tìm một nhà cung cấp vị trí.
-        Criteria criteria = new Criteria();
-
-        String bestProvider = locationManager.getBestProvider(criteria, true);
-        boolean enabled = locationManager.isProviderEnabled(bestProvider);
-        if(!enabled){
-            Toast.makeText(this, "Không tìm thấy nhà cung cấp nào!", Toast.LENGTH_LONG).show();
-            return null;
-        }
-        return bestProvider;
-    }
+//    private String getEnabledLocationProvider() {
+//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//        // Tiêu chí để tìm một nhà cung cấp vị trí.
+//        Criteria criteria = new Criteria();
+//
+//        String bestProvider = locationManager.getBestProvider(criteria, true);
+//        boolean enabled = locationManager.isProviderEnabled(bestProvider);
+//        if(!enabled){
+//            Toast.makeText(this, "Không tìm thấy nhà cung cấp nào!", Toast.LENGTH_LONG).show();
+//            return null;
+//        }
+//        return bestProvider;
+//    }
 }
