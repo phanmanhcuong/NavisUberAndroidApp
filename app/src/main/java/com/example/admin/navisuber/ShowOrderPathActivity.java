@@ -15,6 +15,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -31,7 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ShowOrderPathActivity extends AppCompatActivity {
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
     private GoogleMap googleMap;
-
+    private Marker markerStart, markerDestination;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +52,64 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 if(ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 googleMap.setMyLocationEnabled(true);
+            }
+        });
+
+        PlaceAutocompleteFragment autocompleteStart = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_start);
+        autocompleteStart.setHint(getResources().getString(R.string.start));
+        autocompleteStart.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                if(markerStart != null) markerStart.remove();
+                LatLng latLngStart = place.getLatLng();
+                if(markerDestination == null){
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(latLngStart)             // Sets the center of the map to location user
+                            .zoom(15)                   // Sets the zoom
+                            .build();                   // Creates a CameraPosition from the builder
+                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                    //Marker cho map
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.title("Start");
+                    markerOptions.position(latLngStart);
+                    Marker currentMarker = googleMap.addMarker(markerOptions);
+                    currentMarker.showInfoWindow();
+                }
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(ShowOrderPathActivity.this, "error" + status, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+        autocompleteDestination.setHint(getResources().getString(R.string.destination));
+        autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                if(markerDestination != null) markerDestination.remove();
+                LatLng latLngDestination = place.getLatLng();
+                if(markerDestination == null){
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(latLngDestination)             // Sets the center of the map to location user
+                            .zoom(15)                   // Sets the zoom
+                            .build();                   // Creates a CameraPosition from the builder
+                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                    //Marker cho map
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.title("Start");
+                    markerOptions.position(latLngDestination);
+                    Marker currentMarker = googleMap.addMarker(markerOptions);
+                    currentMarker.showInfoWindow();
+                }
+            }
+
+            @Override
+            public void onError(Status status) {
+
             }
         });
     }
@@ -110,8 +172,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(latLng)             // Sets the center of the map to location user
                     .zoom(15)                   // Sets the zoom
-                    .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(40)                   // Sets the tilt of the camera to 40 degrees
                     .build();                   // Creates a CameraPosition from the builder
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
