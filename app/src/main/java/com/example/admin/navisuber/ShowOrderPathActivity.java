@@ -45,7 +45,9 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 googleMap = ggMap;
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 googleMap.getUiSettings().setZoomControlsEnabled(true);
-                //googleMap.setMyLocationEnabled(true);
+                if(ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                googleMap.setMyLocationEnabled(true);
             }
         });
     }
@@ -57,7 +59,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             //vị trí chính xác
             int accessFinePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
-            if(accessCoarsePermission != PackageManager.PERMISSION_DENIED || accessFinePermission != PackageManager.PERMISSION_DENIED){
+            if(accessCoarsePermission != PackageManager.PERMISSION_GRANTED || accessFinePermission != PackageManager.PERMISSION_GRANTED){
                 String[] permissions = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
                 //Dialog
                 ActivityCompat.requestPermissions(this, permissions, REQUEST_ID_ACCESS_COURSE_FINE_LOCATION);
@@ -84,16 +86,17 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     }
     private void showMyLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        String locationProvider = this.getEnabledLocationProvider();
+        //String locationProvider = this.getEnabledLocationProvider();
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
         if(locationProvider == null) return;
         // Millisecond
-        final long MIN_TIME_BW_UPDATES = 1000;
+        //final long MIN_TIME_BW_UPDATES = 1000;
         // Met
-        final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+        //final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
         Location myLocation = null;
 
         try{
-            locationManager.requestLocationUpdates(locationProvider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener)this);
+            //locationManager.requestLocationUpdates(locationProvider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener)this);
             myLocation = locationManager.getLastKnownLocation(locationProvider);
         } catch (SecurityException e) {
             Toast.makeText(this, "Show My Location Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
