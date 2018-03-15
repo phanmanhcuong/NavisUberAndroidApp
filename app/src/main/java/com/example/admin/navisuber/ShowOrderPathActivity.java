@@ -4,6 +4,7 @@ import android.*;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -27,6 +29,16 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by Admin on 3/13/2018.
@@ -35,7 +47,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ShowOrderPathActivity extends AppCompatActivity {
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
     private GoogleMap googleMap;
-    private Marker markerStart, markerDestination;
+    private Marker markerOrigin, markerDestination;
+    private static String originLocation;
+    private static String destinationLocation;
+    private PolylineOptions polylineOptions;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,26 +70,43 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
         });
 
-        PlaceAutocompleteFragment autocompleteStart = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_start);
-        autocompleteStart.setHint(getResources().getString(R.string.start));
-        autocompleteStart.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+        autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+        //dùng cho cả 2 fragment
+        AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
+        autocompleteOrigin.setFilter(autocompleteFilter);
+        autocompleteOrigin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                if(markerStart != null) markerStart.remove();
-                LatLng latLngStart = place.getLatLng();
+                originLocation = String.valueOf(place.getName());
+                if(markerOrigin != null) markerOrigin.remove();
+                LatLng latLngOrigin = place.getLatLng();
+
+                originLocation = String.valueOf(place.getName());
+
+                //đặt camera đến điểm Origin nếu chưa có điểm Đón
                 if(markerDestination == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(latLngStart)             // Sets the center of the map to location user
+                            .target(latLngOrigin)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
                     //Marker cho map
                     MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.title("Start");
-                    markerOptions.position(latLngStart);
-                    Marker currentMarker = googleMap.addMarker(markerOptions);
-                    currentMarker.showInfoWindow();
+                    markerOptions.title("Điểm đón");
+                    markerOptions.position(latLngOrigin);
+                    markerOrigin = googleMap.addMarker(markerOptions);
+                    markerOrigin.showInfoWindow();
+                }
+                //Nếu đã có điểm đón thì vẽ đường đi
+                else{
+                    String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
+                    ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
+                    polylineOptions.addAll(listLatLng);
+                    Polyline line = googleMap.addPolyline(polylineOptions);
+                    line.setColor(Color.RED);
+                    line.setWidth(5);
                 }
             }
 
@@ -86,12 +118,16 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
         PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
         autocompleteDestination.setHint(getResources().getString(R.string.destination));
+        autocompleteDestination.setFilter(autocompleteFilter);
         autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 if(markerDestination != null) markerDestination.remove();
                 LatLng latLngDestination = place.getLatLng();
-                if(markerDestination == null){
+
+                destinationLocation = String.valueOf(place.getName());
+
+                if(markerOrigin == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(latLngDestination)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
@@ -100,10 +136,17 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
                     //Marker cho map
                     MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.title("Start");
+                    markerOptions.title("Điểm đến");
                     markerOptions.position(latLngDestination);
-                    Marker currentMarker = googleMap.addMarker(markerOptions);
-                    currentMarker.showInfoWindow();
+                    markerDestination = googleMap.addMarker(markerOptions);
+                    markerDestination.showInfoWindow();
+                } else{
+                    String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
+                    ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
+                    polylineOptions.addAll(listLatLng);
+                    Polyline line = googleMap.addPolyline(polylineOptions);
+                    line.setColor(Color.RED);
+                    line.setWidth(5);
                 }
             }
 
@@ -112,6 +155,47 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private ArrayList<LatLng> getDirectionLatLng(String googleMapDirectionRequest) {
+        ArrayList<LatLng> listLatLng = new ArrayList<LatLng>();
+        try {
+            URL url = new URL(googleMapDirectionRequest);
+            InputStreamReader reader = new InputStreamReader(url.openStream(), "UTF-8");
+
+            Direction results = new Gson().fromJson(reader, Direction.class);
+            Direction.Route routes[] = results.getRoutes();
+            Direction.Leg legs[] = routes[0].getLegs();
+            Direction.Leg.Step steps[] = legs[0].getSteps();
+
+            for(Direction.Leg.Step step : steps){
+                LatLng latLngOrigin = new LatLng(step.getOriginLocation().getLat(), step.getOriginLocation().getLng());
+                LatLng latLngDestination = new LatLng(step.getDestinationLocation().getLat(), step.getDestinationLocation().getLng());
+                listLatLng.add(latLngOrigin);
+                listLatLng.add(latLngDestination);
+            }
+
+            return listLatLng;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return listLatLng;
+    }
+
+    private String makeGoogleMapDirectionRequest(String originLocation, String destinationLocation) {
+        StringBuilder stringRequest = new StringBuilder();
+        stringRequest.append("https://maps.googleapis.com/maps/api/directions/json");
+        stringRequest.append("?origin=");
+        stringRequest.append(originLocation);
+        stringRequest.append("&destination=");
+        stringRequest.append(destinationLocation);
+        stringRequest.append("&key=");
+        stringRequest.append(getResources().getString(R.string.google_api_key));
+        return stringRequest.toString();
     }
 
     private void askPermissionsAndShowMyLocation() {
