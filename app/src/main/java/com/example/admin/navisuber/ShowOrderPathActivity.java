@@ -28,6 +28,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -54,6 +55,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class ShowOrderPathActivity extends AppCompatActivity {
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
     private GoogleMap googleMap;
+    private static Polyline line;
     private Marker markerOrigin, markerDestination;
     private static String originLocation;
     private static String destinationLocation;
@@ -87,9 +89,15 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             public void onPlaceSelected(Place place) {
                 originLocation = String.valueOf(place.getName());
                 if(markerOrigin != null) markerOrigin.remove();
-                LatLng latLngOrigin = place.getLatLng();
 
+                LatLng latLngOrigin = place.getLatLng();
                 originLocation = String.valueOf(place.getName());
+
+                //Marker cho map
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLngOrigin);
+                markerOrigin = googleMap.addMarker(markerOptions);
+                markerOrigin.showInfoWindow();
 
                 //đặt camera đến điểm Origin nếu chưa có điểm Đón
                 if(markerDestination == null){
@@ -98,13 +106,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                             .zoom(15)                   // Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                    //Marker cho map
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.title("Điểm đón");
-                    markerOptions.position(latLngOrigin);
-                    markerOrigin = googleMap.addMarker(markerOptions);
-                    markerOrigin.showInfoWindow();
                 }
                 //Nếu đã có điểm đón thì vẽ đường đi
                 else{
@@ -126,9 +127,16 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             @Override
             public void onPlaceSelected(Place place) {
                 if(markerDestination != null) markerDestination.remove();
-                LatLng latLngDestination = place.getLatLng();
 
+                LatLng latLngDestination = place.getLatLng();
                 destinationLocation = String.valueOf(place.getName());
+
+                //Marker cho map
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title("Điểm đến");
+                markerOptions.position(latLngDestination);
+                markerDestination = googleMap.addMarker(markerOptions);
+                markerDestination.showInfoWindow();
 
                 if(markerOrigin == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -136,13 +144,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                             .zoom(15)                   // Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                    //Marker cho map
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.title("Điểm đến");
-                    markerOptions.position(latLngDestination);
-                    markerDestination = googleMap.addMarker(markerOptions);
-                    markerDestination.showInfoWindow();
                 }
                 else{
                     ShowDirectionTask showDirectionTask = new ShowDirectionTask();
@@ -229,6 +230,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         }
     }
 
+    //phải encode tên điểm đến và điểm đón
     private String makeGoogleMapDirectionRequest(String originLocation, String destinationLocation) {
         StringBuilder stringRequest = new StringBuilder();
         stringRequest.append("https://maps.googleapis.com/maps/api/directions/json");
@@ -248,7 +250,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         return null;
     }
 
-
     private ArrayList<LatLng> getDirectionLatLng(String googleMapDirectionRequest) {
         ArrayList<LatLng> listLatLng = new ArrayList<>();
         try {
@@ -259,11 +260,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Direction.Route[] routes = results.getRoutes();
 
             //get bound
-            Direction.Bound[] bounds = routes[0].getBound();
-            Direction.Bound.Northeast northeast = bounds[0].getNortheast();
-            Direction.Bound.Southwest southwest = bounds[0].getSouthwest();
+            Direction.Bound bounds = routes[0].getBound();
+            Direction.Bound.Northeast northeast = bounds.getNortheast();
+            Direction.Bound.Southwest southwest = bounds.getSouthwest();
             LatLng latLngNortheast = new LatLng(northeast.getLat(), northeast.getLng());
             LatLng latLngSouthwest = new LatLng(southwest.getLat(), southwest.getLng());
+            listLatLng.add(latLngNortheast);
+            listLatLng.add(latLngSouthwest);
+
             //get leg
             Direction.Leg[] legs = routes[0].getLegs();
             Direction.Leg.Step[] steps = legs[0].getSteps();
@@ -297,11 +301,21 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<LatLng> listLatLng ){
             super.onPostExecute(listLatLng);
+            LatLng latLngNortheast = listLatLng.get(0);
+            LatLng latLngSouthwest = listLatLng.get(1);
+            listLatLng.remove(0);
+            listLatLng.remove(0);
+            LatLngBounds latLngBounds = new LatLngBounds(latLngSouthwest, latLngNortheast);
             polylineOptions = new PolylineOptions();
             polylineOptions.addAll(listLatLng);
-            Polyline line = googleMap.addPolyline(polylineOptions);
+            if(line != null){
+                line.remove();
+            }
+            line = googleMap.addPolyline(polylineOptions);
             line.setColor(Color.RED);
             line.setWidth(10);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
+
         }
     };
 
