@@ -9,6 +9,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -33,12 +34,18 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Admin on 3/13/2018.
@@ -101,12 +108,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 }
                 //Nếu đã có điểm đón thì vẽ đường đi
                 else{
-                    String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
-                    ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
-                    polylineOptions.addAll(listLatLng);
-                    Polyline line = googleMap.addPolyline(polylineOptions);
-                    line.setColor(Color.RED);
-                    line.setWidth(5);
+                    ShowDirectionTask showDirectionTask = new ShowDirectionTask();
+                    showDirectionTask.execute();
                 }
             }
 
@@ -140,13 +143,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                     markerOptions.position(latLngDestination);
                     markerDestination = googleMap.addMarker(markerOptions);
                     markerDestination.showInfoWindow();
-                } else{
-                    String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
-                    ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
-                    polylineOptions.addAll(listLatLng);
-                    Polyline line = googleMap.addPolyline(polylineOptions);
-                    line.setColor(Color.RED);
-                    line.setWidth(5);
+                }
+                else{
+                    ShowDirectionTask showDirectionTask = new ShowDirectionTask();
+                    showDirectionTask.execute();
                 }
             }
 
@@ -155,47 +155,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private ArrayList<LatLng> getDirectionLatLng(String googleMapDirectionRequest) {
-        ArrayList<LatLng> listLatLng = new ArrayList<LatLng>();
-        try {
-            URL url = new URL(googleMapDirectionRequest);
-            InputStreamReader reader = new InputStreamReader(url.openStream(), "UTF-8");
-
-            Direction results = new Gson().fromJson(reader, Direction.class);
-            Direction.Route routes[] = results.getRoutes();
-            Direction.Leg legs[] = routes[0].getLegs();
-            Direction.Leg.Step steps[] = legs[0].getSteps();
-
-            for(Direction.Leg.Step step : steps){
-                LatLng latLngOrigin = new LatLng(step.getOriginLocation().getLat(), step.getOriginLocation().getLng());
-                LatLng latLngDestination = new LatLng(step.getDestinationLocation().getLat(), step.getDestinationLocation().getLng());
-                listLatLng.add(latLngOrigin);
-                listLatLng.add(latLngDestination);
-            }
-
-            return listLatLng;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return listLatLng;
-    }
-
-    private String makeGoogleMapDirectionRequest(String originLocation, String destinationLocation) {
-        StringBuilder stringRequest = new StringBuilder();
-        stringRequest.append("https://maps.googleapis.com/maps/api/directions/json");
-        stringRequest.append("?origin=");
-        stringRequest.append(originLocation);
-        stringRequest.append("&destination=");
-        stringRequest.append(destinationLocation);
-        stringRequest.append("&key=");
-        stringRequest.append(getResources().getString(R.string.google_api_key));
-        return stringRequest.toString();
     }
 
     private void askPermissionsAndShowMyLocation() {
@@ -269,6 +228,82 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Toast.makeText(this, "Không tìm được vị trí hiện tại", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private String makeGoogleMapDirectionRequest(String originLocation, String destinationLocation) {
+        StringBuilder stringRequest = new StringBuilder();
+        stringRequest.append("https://maps.googleapis.com/maps/api/directions/json");
+        stringRequest.append("?origin=");
+        try {
+            String originEncode = URLEncoder.encode(originLocation, "utf-8");
+            String destinationEncode = URLEncoder.encode(destinationLocation, "utf-8");
+            stringRequest.append(originEncode);
+            stringRequest.append("&destination=");
+            stringRequest.append(destinationEncode);
+            stringRequest.append("&key=");
+            stringRequest.append(getResources().getString(R.string.google_api_key));
+            return stringRequest.toString();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    private ArrayList<LatLng> getDirectionLatLng(String googleMapDirectionRequest) {
+        ArrayList<LatLng> listLatLng = new ArrayList<>();
+        try {
+            URL url = new URL(googleMapDirectionRequest);
+            InputStreamReader reader = new InputStreamReader(url.openStream(), "UTF-8");
+
+            Direction results = new Gson().fromJson(reader, Direction.class);
+            Direction.Route[] routes = results.getRoutes();
+
+            //get bound
+            Direction.Bound[] bounds = routes[0].getBound();
+            Direction.Bound.Northeast northeast = bounds[0].getNortheast();
+            Direction.Bound.Southwest southwest = bounds[0].getSouthwest();
+            LatLng latLngNortheast = new LatLng(northeast.getLat(), northeast.getLng());
+            LatLng latLngSouthwest = new LatLng(southwest.getLat(), southwest.getLng());
+            //get leg
+            Direction.Leg[] legs = routes[0].getLegs();
+            Direction.Leg.Step[] steps = legs[0].getSteps();
+
+            for(Direction.Leg.Step step : steps){
+                LatLng latLngOrigin = new LatLng(step.getstart_location().getLat(), step.getstart_location().getLng());
+                LatLng latLngDestination = new LatLng(step.getend_location().getLat(), step.getend_location().getLng());
+                listLatLng.add(latLngOrigin);
+                listLatLng.add(latLngDestination);
+            }
+
+            return listLatLng;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return listLatLng;
+    }
+
+    private class ShowDirectionTask extends AsyncTask<Void, Void, ArrayList<LatLng>> {
+        @Override
+        protected ArrayList<LatLng> doInBackground(Void... params) {
+            String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
+            ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
+            return listLatLng;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<LatLng> listLatLng ){
+            super.onPostExecute(listLatLng);
+            polylineOptions = new PolylineOptions();
+            polylineOptions.addAll(listLatLng);
+            Polyline line = googleMap.addPolyline(polylineOptions);
+            line.setColor(Color.RED);
+            line.setWidth(10);
+        }
+    };
 
     //tim nhà cung cấp vị trí
 //    private String getEnabledLocationProvider() {
