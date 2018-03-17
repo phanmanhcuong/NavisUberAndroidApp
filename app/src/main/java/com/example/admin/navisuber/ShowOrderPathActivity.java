@@ -1,13 +1,9 @@
 package com.example.admin.navisuber;
 
-import android.*;
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -35,18 +31,14 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Admin on 3/13/2018.
@@ -54,12 +46,15 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class ShowOrderPathActivity extends AppCompatActivity {
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
-    private GoogleMap googleMap;
+    private static GoogleMap googleMap;
     private static Polyline line;
     private Marker markerOrigin, markerDestination;
     private static String originLocation;
     private static String destinationLocation;
-    private PolylineOptions polylineOptions;
+    private static ArrayList<LatLng> sLatLngArrayList;
+    private static LatLngBounds sLatLngBounds;
+    private String placeOrigin;
+    private String placeDestination;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +82,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         autocompleteOrigin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                originLocation = String.valueOf(place.getName());
+                placeDestination = place.getName().toString();
+
                 if(markerOrigin != null) markerOrigin.remove();
 
                 LatLng latLngOrigin = place.getLatLng();
@@ -126,6 +122,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
+                placeOrigin = place.getName().toString();
+
                 if(markerDestination != null) markerDestination.remove();
 
                 LatLng latLngDestination = place.getLatLng();
@@ -192,17 +190,11 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     }
     private void showMyLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        //String locationProvider = this.getEnabledLocationProvider();
         String locationProvider = LocationManager.NETWORK_PROVIDER;
         if(locationProvider == null) return;
-        // Millisecond
-        //final long MIN_TIME_BW_UPDATES = 1000;
-        // Met
-        //final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
         Location myLocation = null;
 
         try{
-            //locationManager.requestLocationUpdates(locationProvider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener)this);
             myLocation = locationManager.getLastKnownLocation(locationProvider);
         } catch (SecurityException e) {
             Toast.makeText(this, "Show My Location Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -211,14 +203,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
         if(myLocation != null){
             LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(latLng)             // Sets the center of the map to location user
-                    .zoom(15)                   // Sets the zoom
-                    .build();                   // Creates a CameraPosition from the builder
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
+            //googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+            if(sLatLngBounds == null){
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(latLng)             // Sets the center of the map to location user
+                        .zoom(15)                   // Sets the zoom
+                        .build();                   // Creates a CameraPosition from the builder
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
             //Marker cho map
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.title("My location");
@@ -306,7 +298,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             listLatLng.remove(0);
             listLatLng.remove(0);
             LatLngBounds latLngBounds = new LatLngBounds(latLngSouthwest, latLngNortheast);
-            polylineOptions = new PolylineOptions();
+            PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.addAll(listLatLng);
             if(line != null){
                 line.remove();
@@ -316,21 +308,34 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             line.setWidth(10);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
 
+            //giữ data khi xoay màn hình
+            sLatLngArrayList = listLatLng;
+            sLatLngBounds = latLngBounds;
+
         }
     };
 
-    //tim nhà cung cấp vị trí
-//    private String getEnabledLocationProvider() {
-//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//        // Tiêu chí để tìm một nhà cung cấp vị trí.
-//        Criteria criteria = new Criteria();
-//
-//        String bestProvider = locationManager.getBestProvider(criteria, true);
-//        boolean enabled = locationManager.isProviderEnabled(bestProvider);
-//        if(!enabled){
-//            Toast.makeText(this, "Không tìm thấy nhà cung cấp nào!", Toast.LENGTH_LONG).show();
-//            return null;
-//        }
-//        return bestProvider;
-//    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
+        outState.putSerializable(getResources().getString(R.string.latlng_arraylist), sLatLngArrayList);
+}
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.latlng_bound));
+        ArrayList<LatLng> latLngArrayList = (ArrayList<LatLng>)savedInstanceState.getSerializable(getResources().getString(R.string.latlng_arraylist));
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.addAll(latLngArrayList);
+        if(line != null){
+            line.remove();
+        }
+        line = googleMap.addPolyline(polylineOptions);
+        line.setColor(Color.RED);
+        line.setWidth(10);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
+    }
 }
