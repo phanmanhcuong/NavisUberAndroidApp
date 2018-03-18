@@ -8,9 +8,13 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -51,7 +55,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private Marker markerOrigin, markerDestination;
     private static String originLocation;
     private static String destinationLocation;
-    private static ArrayList<LatLng> sLatLngArrayList;
+    private static RouteWrapper sRouteWrapper;
     private static LatLngBounds sLatLngBounds;
     private String placeOrigin;
     private String placeDestination;
@@ -242,7 +246,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         return null;
     }
 
-    private ArrayList<LatLng> getDirectionLatLng(String googleMapDirectionRequest) {
+    private RouteWrapper getDirectionLatLng(String googleMapDirectionRequest) {
         ArrayList<LatLng> listLatLng = new ArrayList<>();
         try {
             URL url = new URL(googleMapDirectionRequest);
@@ -262,8 +266,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             //get leg
             Direction.Leg[] legs = routes[0].getLegs();
-            Direction.Leg.Step[] steps = legs[0].getSteps();
+            Direction.Leg.Distance distance = legs[0].getDistance();
+            Direction.Leg.Duration duration = legs[0].getDuration();
 
+            Direction.Leg.Step[] steps = legs[0].getSteps();
             for(Direction.Leg.Step step : steps){
                 LatLng latLngOrigin = new LatLng(step.getstart_location().getLat(), step.getstart_location().getLng());
                 LatLng latLngDestination = new LatLng(step.getend_location().getLat(), step.getend_location().getLng());
@@ -271,7 +277,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 listLatLng.add(latLngDestination);
             }
 
-            return listLatLng;
+            RouteWrapper routeWrapper= new RouteWrapper(listLatLng, distance, duration);
+            return routeWrapper;
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -279,25 +286,28 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return listLatLng;
+        return null;
     }
 
-    private class ShowDirectionTask extends AsyncTask<Void, Void, ArrayList<LatLng>> {
+    private class ShowDirectionTask extends AsyncTask<Void, Void, RouteWrapper> {
         @Override
-        protected ArrayList<LatLng> doInBackground(Void... params) {
+        protected RouteWrapper doInBackground(Void... params) {
             String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
-            ArrayList<LatLng> listLatLng = getDirectionLatLng(googleMapDirectionRequest);
-            return listLatLng;
+            RouteWrapper routeWrapper = getDirectionLatLng(googleMapDirectionRequest);
+            return routeWrapper;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<LatLng> listLatLng ){
-            super.onPostExecute(listLatLng);
+        protected void onPostExecute(RouteWrapper routeWrapper ){
+            super.onPostExecute(routeWrapper);
+
+            ArrayList<LatLng> listLatLng = routeWrapper.getArrayListLatLng();
             LatLng latLngNortheast = listLatLng.get(0);
             LatLng latLngSouthwest = listLatLng.get(1);
             listLatLng.remove(0);
             listLatLng.remove(0);
             LatLngBounds latLngBounds = new LatLngBounds(latLngSouthwest, latLngNortheast);
+
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.addAll(listLatLng);
             if(line != null){
@@ -308,8 +318,16 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             line.setWidth(10);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
 
+            //hiển thị quãng đường và thời gian di chuyển
+            String distance = routeWrapper.getDistance().getText();
+            String duration = routeWrapper.getDuration().getText();
+            TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
+            tvDistanceDuration.setText(duration + " (" + distance + ")");
+            LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
+            lnBottomMenu.setVisibility(View.VISIBLE);
+
             //giữ data khi xoay màn hình
-            sLatLngArrayList = listLatLng;
+            sRouteWrapper = routeWrapper;
             sLatLngBounds = latLngBounds;
 
         }
@@ -319,23 +337,59 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
-        outState.putSerializable(getResources().getString(R.string.latlng_arraylist), sLatLngArrayList);
+        outState.putParcelable(getResources().getString(R.string.latlng_arraylist), (Parcelable) sRouteWrapper);
 }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.latlng_bound));
-        ArrayList<LatLng> latLngArrayList = (ArrayList<LatLng>)savedInstanceState.getSerializable(getResources().getString(R.string.latlng_arraylist));
+        RouteWrapper routeWrapper = (RouteWrapper) savedInstanceState.getParcelable(getResources().getString(R.string.rout_wrapper));
 
+        ArrayList<LatLng> latLngArrayList = routeWrapper.getArrayListLatLng();
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.addAll(latLngArrayList);
         if(line != null){
             line.remove();
         }
-        line = googleMap.addPolyline(polylineOptions);
-        line.setColor(Color.RED);
-        line.setWidth(10);
+        line = googleMap.addPolyline(new PolylineOptions()
+                .addAll(latLngArrayList)
+                .width(10)
+                .color(Color.RED));
+//        line = googleMap.addPolyline(polylineOptions);
+//        line.setColor(Color.RED);
+//        line.setWidth(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
+
+        String distance = routeWrapper.getDistance().getText();
+        String duration = routeWrapper.getDuration().getText();
+        TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
+        tvDistanceDuration.setText(duration + " (" + distance + ")");
+        LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
+        lnBottomMenu.setVisibility(View.VISIBLE);
+    }
+
+    private class RouteWrapper{
+        private ArrayList<LatLng> arrayListLatLng;
+        private Direction.Leg.Distance distance;
+        private Direction.Leg.Duration duration;
+
+        public RouteWrapper(ArrayList<LatLng> arrayListLatLng, Direction.Leg.Distance distance, Direction.Leg.Duration duration) {
+            this.arrayListLatLng = arrayListLatLng;
+            this.distance = distance;
+            this.duration = duration;
+        }
+
+        public ArrayList<LatLng> getArrayListLatLng() {
+            return arrayListLatLng;
+        }
+
+        public Direction.Leg.Distance getDistance() {
+            return distance;
+        }
+
+        public Direction.Leg.Duration getDuration() {
+            return duration;
+        }
     }
 }
