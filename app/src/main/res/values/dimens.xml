@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="et_padding_left">10px</dimen>
+    <dimen name="tv_padding_left">20dp</dimen>
+    <dimen name="tv_textsize">20sp</dimen>
+    <dimen name="btn_padding_right">17dp</dimen>
+    <dimen name="ln_margin_bottom">10dp</dimen>
 </resources>

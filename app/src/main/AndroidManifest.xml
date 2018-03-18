@@ -16,8 +16,8 @@
         android:theme="@style/AppTheme">
 
         <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs" />
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_api_key"/>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -33,6 +33,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".DetailCarOrderActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

@@ -3,6 +3,17 @@
     <string name="tv_title">Nhập số điên thoại</string>
     <string name="submit_phone_number">Xác Nhận</string>
     <string name="phone_number">phoneNumber</string>
-    <string name="start">Điểm đón</string>
+    <string name="origin">Điểm đón</string>
     <string name="destination">Điểm đến</string>
+    <string name="google_api_key">AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs</string>
+    <string name="latlng_bound">LatLngBound</string>
+    <string name="latlng_arraylist">LatLngArraylist</string>
+    <string name="route_wrapper">RouteWrapper</string>
+    <string name="car_type">Loại xe</string>
+    <string name="pick_up_time">Thời gian đón (ngày/tháng/năm giờ:phút)</string>
+    <string name="so_dien_thoai">Số điện thoại liên lạc</string>
+    <string name="expected_money">Số tiền dự kiến</string>
+    <string name="submit_car_order">Xác nhận đặt xe</string>
+    <string name="duration">Duration</string>
+    <string name="distance">Distance</string>
 </resources>

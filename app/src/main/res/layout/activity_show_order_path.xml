@@ -2,28 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <EditText
-        android:id="@+id/et_start"
+    <fragment
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/et_padding_left"
-        android:inputType="text"
-        android:maxLines="1"
-        android:hint="@string/start"
-        android:textColorHint="@color/colorSilver"/>
-    <EditText
-        android:id="@+id/et_destination"
+        android:id="@+id/fragment_auto_complete_origin" />
+    <fragment
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/et_padding_left"
-        android:inputType="text"
-        android:maxLines="1"
-        android:hint="@string/destination"
-        android:textColorHint="@color/colorSilver"/>
+        android:id="@+id/fragment_auto_complete_destination"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/ln_bottom_menu"
+        android:layout_marginBottom="@dimen/ln_margin_bottom"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/tv_distance_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/tv_padding_left"
+            android:textSize="@dimen/tv_textsize"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        <ImageButton
+            android:id="@+id/btn_detail_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_24px"
+            android:background="@android:color/transparent"
+            android:paddingRight="@dimen/btn_padding_right"/>
+    </LinearLayout>
+
     <fragment
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/fragment_ggmap"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent"/>
+
 </LinearLayout>

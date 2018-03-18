@@ -1,6 +1,7 @@
 package com.example.admin.navisuber;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -8,11 +9,11 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
  */
 
 public class ShowOrderPathActivity extends AppCompatActivity {
+    private static String phoneNumber;
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
     private static GoogleMap googleMap;
     private static Polyline line;
@@ -63,6 +65,12 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_order_path);
+
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if(bundle != null){
+            phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
+        }
 
         SupportMapFragment ggMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_ggmap);
         ggMapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -195,8 +203,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private void showMyLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         String locationProvider = LocationManager.NETWORK_PROVIDER;
-        if(locationProvider == null) return;
-        Location myLocation = null;
+        Location myLocation;
 
         try{
             myLocation = locationManager.getLastKnownLocation(locationProvider);
@@ -277,8 +284,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 listLatLng.add(latLngDestination);
             }
 
-            RouteWrapper routeWrapper= new RouteWrapper(listLatLng, distance, duration);
-            return routeWrapper;
+            return new RouteWrapper(listLatLng, distance, duration);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -323,6 +329,15 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             String duration = routeWrapper.getDuration().getText();
             TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
             tvDistanceDuration.setText(duration + " (" + distance + ")");
+
+            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
+                }
+            });
+            
             LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
             lnBottomMenu.setVisibility(View.VISIBLE);
 
@@ -331,65 +346,66 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             sLatLngBounds = latLngBounds;
 
         }
-    };
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
-        outState.putParcelable(getResources().getString(R.string.latlng_arraylist), (Parcelable) sRouteWrapper);
+        if(sRouteWrapper != null){
+            outState.putSerializable(getResources().getString(R.string.latlng_arraylist), sRouteWrapper.getArrayListLatLng());
+            outState.putString(getResources().getString(R.string.duration), sRouteWrapper.getDuration().getText());
+            outState.putString(getResources().getString(R.string.distance), sRouteWrapper.getDistance().getText());
+        }
 }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.latlng_bound));
-        RouteWrapper routeWrapper = (RouteWrapper) savedInstanceState.getParcelable(getResources().getString(R.string.rout_wrapper));
+        ArrayList<LatLng> latLngArrayList = (ArrayList<LatLng>) savedInstanceState.getSerializable(getResources().getString(R.string.latlng_arraylist));
+        String duration = savedInstanceState.getString(getResources().getString(R.string.duration));
+        String distance = savedInstanceState.getString(getResources().getString(R.string.distance));
 
-        ArrayList<LatLng> latLngArrayList = routeWrapper.getArrayListLatLng();
         PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.addAll(latLngArrayList);
-        if(line != null){
-            line.remove();
-        }
-        line = googleMap.addPolyline(new PolylineOptions()
-                .addAll(latLngArrayList)
-                .width(10)
-                .color(Color.RED));
+        // khi chưa nhập điểm đến hay điểm đón mà xoay màn hình thì latLngArrayList sẽ null
+        if(latLngArrayList != null){
+            polylineOptions.addAll(latLngArrayList);
+            if(line != null){
+                line.remove();
+            }
+            line = googleMap.addPolyline(new PolylineOptions()
+                    .addAll(latLngArrayList)
+                    .width(10)
+                    .color(Color.RED));
 //        line = googleMap.addPolyline(polylineOptions);
 //        line.setColor(Color.RED);
 //        line.setWidth(10);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
 
-        String distance = routeWrapper.getDistance().getText();
-        String duration = routeWrapper.getDuration().getText();
-        TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
-        tvDistanceDuration.setText(duration + " (" + distance + ")");
-        LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
-        lnBottomMenu.setVisibility(View.VISIBLE);
-    }
+            TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
+            tvDistanceDuration.setText(duration + " (" + distance + ")");
 
-    private class RouteWrapper{
-        private ArrayList<LatLng> arrayListLatLng;
-        private Direction.Leg.Distance distance;
-        private Direction.Leg.Duration duration;
+            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
+                }
+            });
 
-        public RouteWrapper(ArrayList<LatLng> arrayListLatLng, Direction.Leg.Distance distance, Direction.Leg.Duration duration) {
-            this.arrayListLatLng = arrayListLatLng;
-            this.distance = distance;
-            this.duration = duration;
-        }
-
-        public ArrayList<LatLng> getArrayListLatLng() {
-            return arrayListLatLng;
-        }
-
-        public Direction.Leg.Distance getDistance() {
-            return distance;
-        }
-
-        public Direction.Leg.Duration getDuration() {
-            return duration;
+            LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
+            lnBottomMenu.setVisibility(View.VISIBLE);
         }
     }
+
+    //chuyển data sang qua intent sang màn hình detail car order
+    private void DetailCarOrder(String placeOrigin, String placeDestination, String phoneNumber) {
+        Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
+        detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
+        detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+        detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
+        startActivity(detailCarOrderIntent);
+    }
+
 }

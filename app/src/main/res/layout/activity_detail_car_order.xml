@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <EditText
+        android:id="@+id/et_origin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/tv_padding_left"
+        android:paddingBottom="@dimen/tv_padding_left"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:hint="@string/origin"/>
+
+    <EditText
+        android:id="@+id/et_destination"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/tv_padding_left"
+        android:paddingBottom="@dimen/tv_padding_left"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:hint="@string/destination"/>
+
+    <EditText
+        android:id="@+id/et_car_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/tv_padding_left"
+        android:paddingBottom="@dimen/tv_padding_left"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:hint="@string/car_type"/>
+
+    <EditText
+        android:id="@+id/et_pick_up_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/tv_padding_left"
+        android:paddingBottom="@dimen/tv_padding_left"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:hint="@string/pick_up_time"
+        android:inputType="datetime"/>
+
+    <EditText
+        android:id="@+id/et_phone_contact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/tv_padding_left"
+        android:paddingBottom="@dimen/tv_padding_left"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:inputType="phone"
+        android:hint="@string/so_dien_thoai"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="@dimen/tv_padding_left">
+
+        <Button
+            android:id="@+id/btn_car_order_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/submit_car_order"/>
+
+    </LinearLayout>
+
+</LinearLayout>
