@@ -16,4 +16,9 @@
     <string name="submit_car_order">Xác nhận đặt xe</string>
     <string name="duration">Duration</string>
     <string name="distance">Distance</string>
+    <string name="detail_order">Yêu cầu cụ thể</string>
+    <string name="alert_dialog_title">Xem đường đi trên google map</string>
+    <string name="alert_dialog_message">Bạn có muốn nhập đầy đủ điểm đón và điểm đến để xem đường đi không ?</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
 </resources>

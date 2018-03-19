@@ -4,23 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <EditText
-        android:id="@+id/et_origin"
+    <fragment
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/fragment_auto_complete_origin"
         android:paddingTop="@dimen/tv_padding_left"
         android:paddingBottom="@dimen/tv_padding_left"
-        android:paddingLeft="@dimen/tv_padding_left"
-        android:hint="@string/origin"/>
-
-    <EditText
-        android:id="@+id/et_destination"
+        android:paddingLeft="@dimen/tv_padding_left"/>
+    <fragment
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/fragment_auto_complete_destination"
         android:paddingTop="@dimen/tv_padding_left"
         android:paddingBottom="@dimen/tv_padding_left"
-        android:paddingLeft="@dimen/tv_padding_left"
-        android:hint="@string/destination"/>
+        android:paddingLeft="@dimen/tv_padding_left"/>
 
     <EditText
         android:id="@+id/et_car_type"

@@ -1,6 +1,7 @@
 package com.example.admin.navisuber;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -166,6 +168,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             }
         });
+
+        ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
+            }
+        });
     }
 
     private void askPermissionsAndShowMyLocation() {
@@ -253,6 +263,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         return null;
     }
 
+    //lấy tọa độ các điểm để vẽ đường đi
     private RouteWrapper getDirectionLatLng(String googleMapDirectionRequest) {
         ArrayList<LatLng> listLatLng = new ArrayList<>();
         try {
@@ -329,17 +340,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             String duration = routeWrapper.getDuration().getText();
             TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
             tvDistanceDuration.setText(duration + " (" + distance + ")");
-
-            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
-            imageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
-                }
-            });
-            
-            LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
-            lnBottomMenu.setVisibility(View.VISIBLE);
+//
+//            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+//            imageButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
+//                }
+//            });
 
             //giữ data khi xoay màn hình
             sRouteWrapper = routeWrapper;
@@ -400,12 +408,44 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     }
 
     //chuyển data sang qua intent sang màn hình detail car order
-    private void DetailCarOrder(String placeOrigin, String placeDestination, String phoneNumber) {
-        Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
-        detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
-        detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+    private void DetailCarOrder(final String placeOrigin, final String placeDestination, String phoneNumber) {
+        final Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
         detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
-        startActivity(detailCarOrderIntent);
+
+        //nếu chưa nhập điểm đón hoặc điểm đón thì confirm xem có muốn chuyển màn hình ko
+        if(placeOrigin == null || placeDestination == null){
+            final AlertDialog.Builder builder = new AlertDialog.Builder(ShowOrderPathActivity.this);
+            builder.setTitle(getResources().getString(R.string.alert_dialog_title));
+            builder.setMessage(getResources().getString(R.string.alert_dialog_message));
+
+            builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+
+            builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if(placeOrigin != null){
+                        detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
+                    }
+
+                    if(placeDestination != null){
+                        detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+                    }
+
+                    startActivity(detailCarOrderIntent);
+                }
+            });
+            builder.show();
+        } else{
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+
+            startActivity(detailCarOrderIntent);
+        }
     }
 
 }

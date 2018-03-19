@@ -17,12 +17,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/ln_bottom_menu"
-        android:layout_marginBottom="@dimen/ln_margin_bottom"
-        android:visibility="gone">
+        android:layout_marginBottom="@dimen/ln_margin_bottom">
         <TextView
             android:id="@+id/tv_distance_duration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/detail_order"
             android:paddingLeft="@dimen/tv_padding_left"
             android:textSize="@dimen/tv_textsize"/>
         <View
