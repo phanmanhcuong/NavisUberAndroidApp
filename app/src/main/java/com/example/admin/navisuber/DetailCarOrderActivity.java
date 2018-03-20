@@ -5,9 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,25 +40,8 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_car_order);
 
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DetailCarOrderActivity.this, ShowOrderPathActivity.class);
-
-                if(originPlace != null){
-                    intent.putExtra(getResources().getString(R.string.origin), originPlace);
-                }
-
-                if(destinationPlace != null){
-                    intent.putExtra(getResources().getString(R.string.destination), destinationPlace);
-                }
-
-            startActivity(intent);
-            }
-        });
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -129,6 +114,26 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case android.R.id.home:
+                Intent intent = new Intent(DetailCarOrderActivity.this, ShowOrderPathActivity.class);
+
+                if(originPlace != null){
+                    intent.putExtra(getResources().getString(R.string.origin), originPlace);
+                }
+
+                if(destinationPlace != null){
+                    intent.putExtra(getResources().getString(R.string.destination), destinationPlace);
+                }
+
+                startActivity(intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     //lưu dữ liệu khi ấn nút back
