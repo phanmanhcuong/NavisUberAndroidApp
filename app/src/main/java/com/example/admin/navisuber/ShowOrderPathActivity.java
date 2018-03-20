@@ -274,6 +274,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Direction.Route[] routes = results.getRoutes();
 
             //get bound
+            if(routes[0] == null) {
+                Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
+                return null;
+            }
             Direction.Bound bounds = routes[0].getBound();
             Direction.Bound.Northeast northeast = bounds.getNortheast();
             Direction.Bound.Southwest southwest = bounds.getSouthwest();

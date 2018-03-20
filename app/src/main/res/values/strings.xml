@@ -24,4 +24,5 @@
     <string name="warning_dialog">Yêu cầu</string>
     <string name="waring_message">Bạn hãy nhập đầy đủ thông tin yêu cầu !</string>
     <string name="ok">OK</string>
+    <string name="route_not_found">Không tìm thấy đường đi !</string>
 </resources>
