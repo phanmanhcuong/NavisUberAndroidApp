@@ -21,4 +21,7 @@
     <string name="alert_dialog_message">Bạn có muốn nhập đầy đủ điểm đón và điểm đến để xem đường đi không ?</string>
     <string name="yes">Có</string>
     <string name="no">Không</string>
+    <string name="warning_dialog">Yêu cầu</string>
+    <string name="waring_message">Bạn hãy nhập đầy đủ thông tin yêu cầu !</string>
+    <string name="ok">OK</string>
 </resources>

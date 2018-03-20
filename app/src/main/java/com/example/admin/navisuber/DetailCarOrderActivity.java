@@ -1,7 +1,9 @@
 package com.example.admin.navisuber;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +26,9 @@ import java.util.Date;
 public class DetailCarOrderActivity extends AppCompatActivity {
     private static String originPlace;
     private static String destinationPlace;
+    private static Date pickupTime;
+    private String phoneNumber;
+    private String carType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +39,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         if(bundle != null){
             originPlace = bundle.getString(getResources().getString(R.string.origin));
             destinationPlace = bundle.getString(getResources().getString(R.string.destination));
-            String phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
+            final String phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
 
             AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
 
@@ -75,7 +80,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
             SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
             try {
-                Date date = format.parse(etPickupTime.getText().toString());
+                pickupTime = format.parse(etPickupTime.getText().toString());
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -84,7 +89,19 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             btnConfirmCarOrder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(originPlace == null || destinationPlace == null || phoneNumber == null || carType == null
+                            || pickupTime == null){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(DetailCarOrderActivity.this);
+                        builder.setTitle(getResources().getString(R.string.warning_dialog));
+                        builder.setMessage(getResources().getString(R.string.waring_message));
+                        builder.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
+                            }
+                        });
+                        builder.show();
+                    }
                 }
             });
         }
