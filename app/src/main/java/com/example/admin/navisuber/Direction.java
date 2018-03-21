@@ -191,13 +191,19 @@ public class Direction {
             public String html_instructions;
             public String travel_mode;
             public String maneuver;
+            public polyline polyline;
 
-            public Step(end_location end_location, start_location start_location, String htmlInstruction, String travel_mode, String maneuver) {
+            public Step(end_location end_location, start_location start_location, String htmlInstruction, String travel_mode, String maneuver, polyline polyline) {
                 this.end_location = end_location;
                 this.start_location = start_location;
                 this.html_instructions = htmlInstruction;
                 this.travel_mode = travel_mode;
                 this.maneuver = maneuver;
+                this.polyline = polyline;
+            }
+
+            public Leg.polyline getPolyline() {
+                return polyline;
             }
 
             public end_location getend_location() {
@@ -218,6 +224,18 @@ public class Direction {
 
             public String getManeuver() {
                 return maneuver;
+            }
+        }
+
+        public static class polyline{
+            String points;
+
+            public String getPoints() {
+                return points;
+            }
+
+            public polyline(String points) {
+                this.points = points;
             }
         }
 

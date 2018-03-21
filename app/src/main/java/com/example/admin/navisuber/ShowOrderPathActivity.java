@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
+import com.google.maps.android.PolyUtil;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -104,11 +106,11 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 originLocation = String.valueOf(place.getName());
 
                 //Marker cho map
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLngOrigin);
-                markerOrigin = googleMap.addMarker(markerOptions);
-                markerOrigin.showInfoWindow();
-
+//                MarkerOptions markerOptions = new MarkerOptions();
+//                markerOptions.title("Điểm đón");
+//                markerOptions.position(latLngOrigin);
+//                markerDestination = googleMap.addMarker(markerOptions);
+//                markerDestination.showInfoWindow();
                 //đặt camera đến điểm Origin nếu chưa có điểm Đón
                 if(markerDestination == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -150,7 +152,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 markerDestination = googleMap.addMarker(markerOptions);
                 markerDestination.showInfoWindow();
 
-                if(markerOrigin == null){
+                if(originLocation == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(latLngDestination)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
@@ -265,7 +267,9 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
     //lấy tọa độ các điểm để vẽ đường đi
     private RouteWrapper getDirectionLatLng(String googleMapDirectionRequest) {
-        ArrayList<LatLng> listLatLng = new ArrayList<>();
+        ArrayList<LatLng> listLatLngBound = new ArrayList<>();
+        ArrayList<String> pointsList = new ArrayList<String>();
+
         try {
             URL url = new URL(googleMapDirectionRequest);
             InputStreamReader reader = new InputStreamReader(url.openStream(), "UTF-8");
@@ -274,7 +278,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Direction.Route[] routes = results.getRoutes();
 
             //get bound
-            if(routes[0] == null) {
+            if(routes.length == 0){
                 Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
                 return null;
             }
@@ -283,8 +287,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Direction.Bound.Southwest southwest = bounds.getSouthwest();
             LatLng latLngNortheast = new LatLng(northeast.getLat(), northeast.getLng());
             LatLng latLngSouthwest = new LatLng(southwest.getLat(), southwest.getLng());
-            listLatLng.add(latLngNortheast);
-            listLatLng.add(latLngSouthwest);
+            listLatLngBound.add(latLngNortheast);
+            listLatLngBound.add(latLngSouthwest);
 
             //get leg
             Direction.Leg[] legs = routes[0].getLegs();
@@ -295,11 +299,19 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             for(Direction.Leg.Step step : steps){
                 LatLng latLngOrigin = new LatLng(step.getstart_location().getLat(), step.getstart_location().getLng());
                 LatLng latLngDestination = new LatLng(step.getend_location().getLat(), step.getend_location().getLng());
-                listLatLng.add(latLngOrigin);
-                listLatLng.add(latLngDestination);
+                listLatLngBound.add(latLngOrigin);
+                listLatLngBound.add(latLngDestination);
+
+                pointsList.add(step.getPolyline().getPoints());
             }
 
-            return new RouteWrapper(listLatLng, distance, duration);
+            ArrayList<LatLng> latLngList = new ArrayList<>();
+            for (String point : pointsList){
+                List<LatLng> latLngListPoint = PolyUtil.decode(point);
+                latLngList.addAll(latLngListPoint);
+            }
+
+            return new RouteWrapper(listLatLngBound, latLngList, distance, duration);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -322,15 +334,18 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         protected void onPostExecute(RouteWrapper routeWrapper ){
             super.onPostExecute(routeWrapper);
 
-            ArrayList<LatLng> listLatLng = routeWrapper.getArrayListLatLng();
-            LatLng latLngNortheast = listLatLng.get(0);
-            LatLng latLngSouthwest = listLatLng.get(1);
-            listLatLng.remove(0);
-            listLatLng.remove(0);
+            ArrayList<LatLng> listLatLngBound = routeWrapper.getLatLngBound();
+
+            //bound
+            LatLng latLngNortheast = listLatLngBound.get(0);
+            LatLng latLngSouthwest = listLatLngBound.get(1);
             LatLngBounds latLngBounds = new LatLngBounds(latLngSouthwest, latLngNortheast);
 
+            //decode ra list<LatLng> từ List<String> của point trong polyline
+            ArrayList<LatLng> listLatLngPoint = routeWrapper.getArrayListPolyline();
+
             PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.addAll(listLatLng);
+            polylineOptions.addAll(listLatLngPoint);
             if(line != null){
                 line.remove();
             }
@@ -355,7 +370,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             //giữ data khi xoay màn hình
             sRouteWrapper = routeWrapper;
-            sLatLngBounds = latLngBounds;
+            //sLatLngBounds = latLngBounds;
 
         }
     }
@@ -365,7 +380,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
         if(sRouteWrapper != null){
-            outState.putSerializable(getResources().getString(R.string.latlng_arraylist), sRouteWrapper.getArrayListLatLng());
+            outState.putSerializable(getResources().getString(R.string.list_lat_lng_bound), sRouteWrapper.getLatLngBound());
+            outState.putSerializable(getResources().getString(R.string.latlng_point_arraylist), sRouteWrapper.getArrayListPolyline());
             outState.putString(getResources().getString(R.string.duration), sRouteWrapper.getDuration().getText());
             outState.putString(getResources().getString(R.string.distance), sRouteWrapper.getDistance().getText());
         }
@@ -374,20 +390,20 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.latlng_bound));
-        ArrayList<LatLng> latLngArrayList = (ArrayList<LatLng>) savedInstanceState.getSerializable(getResources().getString(R.string.latlng_arraylist));
+        LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.list_lat_lng_bound));
+        ArrayList<LatLng> latLngPointArrayList = (ArrayList<LatLng>) savedInstanceState.getSerializable(getResources().getString(R.string.latlng_point_arraylist));
         String duration = savedInstanceState.getString(getResources().getString(R.string.duration));
         String distance = savedInstanceState.getString(getResources().getString(R.string.distance));
 
         PolylineOptions polylineOptions = new PolylineOptions();
         // khi chưa nhập điểm đến hay điểm đón mà xoay màn hình thì latLngArrayList sẽ null
-        if(latLngArrayList != null){
-            polylineOptions.addAll(latLngArrayList);
+        if(latLngPointArrayList != null){
+            polylineOptions.addAll(latLngPointArrayList);
             if(line != null){
                 line.remove();
             }
             line = googleMap.addPolyline(new PolylineOptions()
-                    .addAll(latLngArrayList)
+                    .addAll(latLngPointArrayList)
                     .width(10)
                     .color(Color.RED));
 //        line = googleMap.addPolyline(polylineOptions);

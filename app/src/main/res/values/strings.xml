@@ -25,4 +25,6 @@
     <string name="waring_message">Bạn hãy nhập đầy đủ thông tin yêu cầu !</string>
     <string name="ok">OK</string>
     <string name="route_not_found">Không tìm thấy đường đi !</string>
+    <string name="list_lat_lng_bound">ListLatLngBound</string>
+    <string name="latlng_point_arraylist">LatLngPointArrayList</string>
 </resources>
