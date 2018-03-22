@@ -13,13 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,6 +33,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     private String phoneNumber;
     private String carType;
     private final String preferencFileName = "preference_file";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,15 +44,20 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        if(bundle != null){
+        if (bundle != null) {
             originPlace = bundle.getString(getResources().getString(R.string.origin));
-            destinationPlace = bundle.getString(getResources().getString(R.string.origin));
+            destinationPlace = bundle.getString(getResources().getString(R.string.destination));
             phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
 
             AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
 
             PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
-            autocompleteOrigin.setText(originPlace);
+            //((EditText)autocompleteOrigin.getActivity().findViewById(R.id.place_autocomplete_search_input)).setText(originPlace);
+            if (originPlace != null) {
+                autocompleteOrigin.setText(originPlace);
+            } else {
+                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+            }
             autocompleteOrigin.setFilter(autocompleteFilter);
             autocompleteOrigin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
@@ -68,9 +72,12 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             });
 
             PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
-            autocompleteDestination.setHint(getResources().getString(R.string.destination));
+            if (destinationPlace != null) {
+                autocompleteDestination.setHint(destinationPlace);
+            } else {
+                autocompleteDestination.setHint(getResources().getString(R.string.destination));
+            }
             autocompleteDestination.setFilter(autocompleteFilter);
-            autocompleteDestination.setText(destinationPlace);
             autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
                 @Override
                 public void onPlaceSelected(Place place) {
@@ -86,20 +93,27 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
             etPhoneNumber.setText(phoneNumber);
 
-            EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-            try {
-                pickupTime = format.parse(etPickupTime.getText().toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            Button btnConfirmCarOrder = (Button)findViewById(R.id.btn_car_order_submit);
+            Button btnConfirmCarOrder = (Button) findViewById(R.id.btn_car_order_submit);
             btnConfirmCarOrder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(originPlace == null || destinationPlace == null || phoneNumber == null || carType == null
-                            || pickupTime == null){
+
+                    EditText etCarType = (EditText) findViewById(R.id.et_car_type);
+                    carType = etCarType.getText().toString();
+
+                    EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
+                    SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                    try {
+                        pickupTime = format.parse(etPickupTime.getText().toString());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+                    phoneNumber = etPhoneNumber.getText().toString();
+
+                    if (originPlace == null || destinationPlace == null || phoneNumber == null || carType == null
+                            || pickupTime == null) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(DetailCarOrderActivity.this);
                         builder.setTitle(getResources().getString(R.string.warning_dialog));
                         builder.setMessage(getResources().getString(R.string.waring_message));
@@ -117,16 +131,16 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-        switch (item.getItemId()){
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 Intent intent = new Intent(DetailCarOrderActivity.this, ShowOrderPathActivity.class);
 
-                if(originPlace != null){
+                if (originPlace != null) {
                     intent.putExtra(getResources().getString(R.string.origin), originPlace);
                 }
 
-                if(destinationPlace != null){
+                if (destinationPlace != null) {
                     intent.putExtra(getResources().getString(R.string.destination), destinationPlace);
                 }
 
@@ -138,29 +152,35 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
     //lưu dữ liệu khi ấn nút back
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         SharedPreferences sharedPreferences = getSharedPreferences(preferencFileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        if(originPlace != null){
+        if (originPlace != null) {
             editor.putString(getResources().getString(R.string.origin), originPlace);
 
         }
 
-        if(destinationPlace != null){
+        if (destinationPlace != null) {
             editor.putString(getResources().getString(R.string.destination), destinationPlace);
         }
 
-        if(carType != null){
+        EditText etCarType = (EditText) findViewById(R.id.et_car_type);
+        carType = etCarType.getText().toString();
+        if (carType != null) {
             editor.putString(getResources().getString(R.string.car_type), carType);
         }
 
-        if(pickupTime != null){
-            editor.putString(getResources().getString(R.string.pick_up_time), pickupTime.toString());
+        EditText etPickUpTime = (EditText) findViewById(R.id.et_pick_up_time);
+        String pickupTimeString = etPickUpTime.getText().toString();
+        if (pickupTimeString != null) {
+            editor.putString(getResources().getString(R.string.pick_up_time), pickupTimeString);
         }
 
-        if(phoneNumber != null){
+        EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+        phoneNumber = etPhoneNumber.getText().toString();
+        if (phoneNumber != null) {
             editor.putString(getResources().getString(R.string.phone_number), phoneNumber);
         }
 
@@ -168,29 +188,30 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         SharedPreferences sharedPreferences = getSharedPreferences(preferencFileName, Context.MODE_PRIVATE);
 
         originPlace = sharedPreferences.getString(getResources().getString(R.string.origin), "");
-        if(originPlace != null){
+        if (originPlace != null) {
             PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
             autocompleteOrigin.setText(originPlace);
         }
 
         destinationPlace = sharedPreferences.getString(getResources().getString(R.string.destination), "");
-        if(destinationPlace != null){
+        if (destinationPlace != null) {
             PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
             autocompleteDestination.setText(destinationPlace);
         }
 
         carType = sharedPreferences.getString(getResources().getString(R.string.car_type), "");
-        if(carType != null){
-
+        if (carType != null) {
+            EditText etPickupTime = (EditText) findViewById(R.id.et_car_type);
+            etPickupTime.setText(carType);
         }
 
         String pickupTimeString = sharedPreferences.getString(getResources().getString(R.string.pick_up_time), "");
-        if(pickupTimeString != null){
+        if (pickupTimeString != null) {
             EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
             etPickupTime.setText(pickupTimeString);
         }

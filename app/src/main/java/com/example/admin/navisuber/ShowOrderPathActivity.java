@@ -56,15 +56,16 @@ import java.util.List;
 public class ShowOrderPathActivity extends AppCompatActivity {
     private static String phoneNumber;
     private static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 1;
+    private static final int ORIGIN_ON_CLEAR_BUTTON_CLICKED = 1;
+    private static final int DESTINATION_ON_CLEAR_BUTTON_CLICKED = 2;
     private static GoogleMap googleMap;
     private static Polyline line;
-    private Marker markerOrigin, markerDestination;
-    private static String originLocation;
-    private static String destinationLocation;
+    private Marker markerDestination;
+    private static String placeOrigin;
+    private static String placeDestination;
     private static RouteWrapper sRouteWrapper;
     private static LatLngBounds sLatLngBounds;
-    private String placeOrigin;
-    private String placeDestination;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +91,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
         });
 
-        PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+        final PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
         autocompleteOrigin.setHint(getResources().getString(R.string.origin));
         //dùng cho cả 2 fragment
         AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
@@ -98,19 +99,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         autocompleteOrigin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                placeDestination = place.getName().toString();
-
-                if(markerOrigin != null) markerOrigin.remove();
+                placeOrigin = place.getName().toString();
 
                 LatLng latLngOrigin = place.getLatLng();
-                originLocation = String.valueOf(place.getName());
-
-                //Marker cho map
-//                MarkerOptions markerOptions = new MarkerOptions();
-//                markerOptions.title("Điểm đón");
-//                markerOptions.position(latLngOrigin);
-//                markerDestination = googleMap.addMarker(markerOptions);
-//                markerDestination.showInfoWindow();
+                
                 //đặt camera đến điểm Origin nếu chưa có điểm Đón
                 if(markerDestination == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -132,18 +124,29 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
         });
 
-        PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+        autocompleteOrigin.getView().findViewById(R.id.place_autocomplete_clear_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PlaceAutocompleteClearButtonListener placeAutocompleteClearButtonListener = new PlaceAutocompleteClearButtonListener(ORIGIN_ON_CLEAR_BUTTON_CLICKED);
+                placeAutocompleteClearButtonListener.execute();
+//                placeOrigin = null;
+//                if(line != null){
+//                    line.remove();
+//                }
+//                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+            }
+        });
+
+        final PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
         autocompleteDestination.setHint(getResources().getString(R.string.destination));
         autocompleteDestination.setFilter(autocompleteFilter);
         autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                placeOrigin = place.getName().toString();
-
                 if(markerDestination != null) markerDestination.remove();
 
                 LatLng latLngDestination = place.getLatLng();
-                destinationLocation = String.valueOf(place.getName());
+                placeDestination = String.valueOf(place.getName());
 
                 //Marker cho map
                 MarkerOptions markerOptions = new MarkerOptions();
@@ -152,7 +155,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 markerDestination = googleMap.addMarker(markerOptions);
                 markerDestination.showInfoWindow();
 
-                if(originLocation == null){
+                if(placeOrigin == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(latLngDestination)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
@@ -170,6 +173,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             }
         });
+
+        autocompleteDestination.getView().findViewById(R.id.place_autocomplete_clear_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PlaceAutocompleteClearButtonListener placeAutocompleteClearButtonListener = new PlaceAutocompleteClearButtonListener(DESTINATION_ON_CLEAR_BUTTON_CLICKED);
+                    placeAutocompleteClearButtonListener.execute();
+                }
+            });
 
         ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
         imageButton.setOnClickListener(new View.OnClickListener() {
@@ -241,18 +252,18 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             Marker currentMarker = googleMap.addMarker(markerOptions);
             currentMarker.showInfoWindow();
         } else{
-            Toast.makeText(this, "Không tìm được vị trí hiện tại", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không tìm được vị trí hiện tại do bạn không bật định vị !", Toast.LENGTH_SHORT).show();
         }
     }
 
     //phải encode tên điểm đến và điểm đón
-    private String makeGoogleMapDirectionRequest(String originLocation, String destinationLocation) {
+    private String makeGoogleMapDirectionRequest(String placeOrigin, String placeDestination) {
         StringBuilder stringRequest = new StringBuilder();
         stringRequest.append("https://maps.googleapis.com/maps/api/directions/json");
         stringRequest.append("?origin=");
         try {
-            String originEncode = URLEncoder.encode(originLocation, "utf-8");
-            String destinationEncode = URLEncoder.encode(destinationLocation, "utf-8");
+            String originEncode = URLEncoder.encode(placeOrigin, "utf-8");
+            String destinationEncode = URLEncoder.encode(placeDestination, "utf-8");
             stringRequest.append(originEncode);
             stringRequest.append("&destination=");
             stringRequest.append(destinationEncode);
@@ -279,7 +290,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             //get bound
             if(routes.length == 0){
-                Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
                 return null;
             }
             Direction.Bound bounds = routes[0].getBound();
@@ -325,7 +335,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private class ShowDirectionTask extends AsyncTask<Void, Void, RouteWrapper> {
         @Override
         protected RouteWrapper doInBackground(Void... params) {
-            String googleMapDirectionRequest = makeGoogleMapDirectionRequest(originLocation, destinationLocation);
+            String googleMapDirectionRequest = makeGoogleMapDirectionRequest(placeOrigin, placeDestination);
             RouteWrapper routeWrapper = getDirectionLatLng(googleMapDirectionRequest);
             return routeWrapper;
         }
@@ -334,6 +344,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         protected void onPostExecute(RouteWrapper routeWrapper ){
             super.onPostExecute(routeWrapper);
 
+            if(routeWrapper == null){
+                Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
+                return;
+            }
             ArrayList<LatLng> listLatLngBound = routeWrapper.getLatLngBound();
 
             //bound
@@ -370,7 +384,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             //giữ data khi xoay màn hình
             sRouteWrapper = routeWrapper;
-            //sLatLngBounds = latLngBounds;
 
         }
     }
@@ -468,4 +481,45 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         }
     }
 
+    private class PlaceAutocompleteClearButtonListener extends AsyncTask<Void, Void, Void> {
+        private int flag;
+
+        public PlaceAutocompleteClearButtonListener(int flag) {
+            this.flag = flag;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                placeOrigin = null;
+
+            } else{
+                placeDestination = null;
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void params){
+            super.onPostExecute(params);
+
+            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+                autocompleteOrigin.setText("");
+                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+            } else{
+                PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+                autocompleteDestination.setText("");
+                autocompleteDestination.setHint(getResources().getString(R.string.destination));
+                markerDestination.remove();
+            }
+
+            if (line != null) {
+                line.remove();
+            }
+
+        }
+
+    }
 }
