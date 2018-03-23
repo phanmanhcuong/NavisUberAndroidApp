@@ -5,6 +5,7 @@
     <string name="phone_number">phoneNumber</string>
     <string name="origin">Điểm đón</string>
     <string name="destination">Điểm đến</string>
+    <string name="destination_latlng">DestinationLatlng</string>
     <string name="google_api_key">AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs</string>
     <string name="latlng_bound">LatLngBound</string>
     <string name="latlng_arraylist">LatLngArraylist</string>

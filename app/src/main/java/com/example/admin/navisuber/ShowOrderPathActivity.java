@@ -63,6 +63,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private Marker markerDestination;
     private static String placeOrigin;
     private static String placeDestination;
+    private static LatLng destinationLatlng;
     private static RouteWrapper sRouteWrapper;
     private static LatLngBounds sLatLngBounds;
 
@@ -72,9 +73,12 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         setContentView(R.layout.activity_show_order_path);
 
         Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
+        final Bundle bundle = intent.getExtras();
         if(bundle != null){
             phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
+            placeOrigin = bundle.getString(getResources().getString(R.string.origin));
+            placeDestination = bundle.getString(getResources().getString(R.string.destination));
+            destinationLatlng = bundle.getParcelable(getResources().getString(R.string.destination_latlng));
         }
 
         SupportMapFragment ggMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_ggmap);
@@ -92,7 +96,12 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         });
 
         final PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
-        autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+        if(placeOrigin != null){
+            //ko hiểu sao setText ko đc
+            autocompleteOrigin.setText(placeOrigin);
+        }else{
+            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+        }
         //dùng cho cả 2 fragment
         AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
         autocompleteOrigin.setFilter(autocompleteFilter);
@@ -129,16 +138,16 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             public void onClick(View v) {
                 PlaceAutocompleteClearButtonListener placeAutocompleteClearButtonListener = new PlaceAutocompleteClearButtonListener(ORIGIN_ON_CLEAR_BUTTON_CLICKED);
                 placeAutocompleteClearButtonListener.execute();
-//                placeOrigin = null;
-//                if(line != null){
-//                    line.remove();
-//                }
-//                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+
             }
         });
 
         final PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
-        autocompleteDestination.setHint(getResources().getString(R.string.destination));
+        if(placeDestination != null){
+            autocompleteDestination.setText(placeDestination);
+        } else{
+            autocompleteDestination.setHint(getResources().getString(R.string.destination));
+        }
         autocompleteDestination.setFilter(autocompleteFilter);
         autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -147,10 +156,11 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
                 LatLng latLngDestination = place.getLatLng();
                 placeDestination = String.valueOf(place.getName());
+                destinationLatlng = place.getLatLng();
 
                 //Marker cho map
                 MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.title("Điểm đến");
+                markerOptions.title(getResources().getString(R.string.destination));
                 markerOptions.position(latLngDestination);
                 markerDestination = googleMap.addMarker(markerOptions);
                 markerDestination.showInfoWindow();
@@ -186,9 +196,21 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
+                String carType = null;
+                String pickupTime = null;
+                if(bundle != null){
+                    carType = bundle.getString(getResources().getString(R.string.car_type));
+                    pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
+                }
+                DetailCarOrder(placeOrigin, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
             }
         });
+
+        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order
+        if(placeOrigin != null && placeDestination != null){
+            ShowDirectionTask showDirectionTask = new ShowDirectionTask();
+            showDirectionTask.execute();
+        }
     }
 
     private void askPermissionsAndShowMyLocation() {
@@ -344,6 +366,15 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         protected void onPostExecute(RouteWrapper routeWrapper ){
             super.onPostExecute(routeWrapper);
 
+            //marker khi đc back từ màn hình detail order
+            if(markerDestination == null){
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(getResources().getString(R.string.destination));
+                markerOptions.position(destinationLatlng);
+                markerDestination = googleMap.addMarker(markerOptions);
+                markerDestination.showInfoWindow();
+            }
+
             if(routeWrapper == null){
                 Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
                 return;
@@ -388,60 +419,60 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
-        if(sRouteWrapper != null){
-            outState.putSerializable(getResources().getString(R.string.list_lat_lng_bound), sRouteWrapper.getLatLngBound());
-            outState.putSerializable(getResources().getString(R.string.latlng_point_arraylist), sRouteWrapper.getArrayListPolyline());
-            outState.putString(getResources().getString(R.string.duration), sRouteWrapper.getDuration().getText());
-            outState.putString(getResources().getString(R.string.distance), sRouteWrapper.getDistance().getText());
-        }
-}
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.list_lat_lng_bound));
-        ArrayList<LatLng> latLngPointArrayList = (ArrayList<LatLng>) savedInstanceState.getSerializable(getResources().getString(R.string.latlng_point_arraylist));
-        String duration = savedInstanceState.getString(getResources().getString(R.string.duration));
-        String distance = savedInstanceState.getString(getResources().getString(R.string.distance));
-
-        PolylineOptions polylineOptions = new PolylineOptions();
-        // khi chưa nhập điểm đến hay điểm đón mà xoay màn hình thì latLngArrayList sẽ null
-        if(latLngPointArrayList != null){
-            polylineOptions.addAll(latLngPointArrayList);
-            if(line != null){
-                line.remove();
-            }
-            line = googleMap.addPolyline(new PolylineOptions()
-                    .addAll(latLngPointArrayList)
-                    .width(10)
-                    .color(Color.RED));
-//        line = googleMap.addPolyline(polylineOptions);
-//        line.setColor(Color.RED);
-//        line.setWidth(10);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
-
-            TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
-            tvDistanceDuration.setText(duration + " (" + distance + ")");
-
-            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
-            imageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DetailCarOrder(placeOrigin, placeDestination, phoneNumber);
-                }
-            });
-
-            LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
-            lnBottomMenu.setVisibility(View.VISIBLE);
-        }
-    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState){
+//        super.onSaveInstanceState(outState);
+//        outState.putParcelable(getResources().getString(R.string.latlng_bound), sLatLngBounds);
+//        if(sRouteWrapper != null){
+//            outState.putSerializable(getResources().getString(R.string.list_lat_lng_bound), sRouteWrapper.getLatLngBound());
+//            outState.putSerializable(getResources().getString(R.string.latlng_point_arraylist), sRouteWrapper.getArrayListPolyline());
+//            outState.putString(getResources().getString(R.string.duration), sRouteWrapper.getDuration().getText());
+//            outState.putString(getResources().getString(R.string.distance), sRouteWrapper.getDistance().getText());
+//        }
+//}
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        LatLngBounds latLngBounds = savedInstanceState.getParcelable(getResources().getString(R.string.list_lat_lng_bound));
+//        ArrayList<LatLng> latLngPointArrayList = (ArrayList<LatLng>) savedInstanceState.getSerializable(getResources().getString(R.string.latlng_point_arraylist));
+//        String duration = savedInstanceState.getString(getResources().getString(R.string.duration));
+//        String distance = savedInstanceState.getString(getResources().getString(R.string.distance));
+//
+//        PolylineOptions polylineOptions = new PolylineOptions();
+//        // khi chưa nhập điểm đến hay điểm đón mà xoay màn hình thì latLngArrayList sẽ null
+//        if(latLngPointArrayList != null){
+//            polylineOptions.addAll(latLngPointArrayList);
+//            if(line != null){
+//                line.remove();
+//            }
+//            line = googleMap.addPolyline(new PolylineOptions()
+//                    .addAll(latLngPointArrayList)
+//                    .width(10)
+//                    .color(Color.RED));
+////        line = googleMap.addPolyline(polylineOptions);
+////        line.setColor(Color.RED);
+////        line.setWidth(10);
+//            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 12));
+//
+//            TextView tvDistanceDuration = (TextView)findViewById(R.id.tv_distance_duration);
+//            tvDistanceDuration.setText(duration + " (" + distance + ")");
+//
+//            ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+//            imageButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    DetailCarOrder(placeOrigin, placeDestination, destinationLatlng, phoneNumber);
+//                }
+//            });
+//
+//            LinearLayout lnBottomMenu = (LinearLayout)findViewById(R.id.ln_bottom_menu);
+//            lnBottomMenu.setVisibility(View.VISIBLE);
+//        }
+//    }
 
     //chuyển data sang qua intent sang màn hình detail car order
-    private void DetailCarOrder(final String placeOrigin, final String placeDestination, String phoneNumber) {
+    private void DetailCarOrder(final String placeOrigin, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime, String phoneNumber) {
         final Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
         detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
 
@@ -467,7 +498,11 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
                     if(placeDestination != null){
                         detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+                        detailCarOrderIntent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
                     }
+
+                    detailCarOrderIntent.putExtra(getResources().getString(R.string.car_type), carType);
+                    detailCarOrderIntent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
 
                     startActivity(detailCarOrderIntent);
                 }
@@ -476,11 +511,15 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         } else{
             detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
             detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.car_type), carType);
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
 
             startActivity(detailCarOrderIntent);
         }
     }
 
+    //xóa điểm đến hoặc điểm đón ngay khi ấn dấu x
     private class PlaceAutocompleteClearButtonListener extends AsyncTask<Void, Void, Void> {
         private int flag;
 
@@ -495,6 +534,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             } else{
                 placeDestination = null;
+                destinationLatlng = null;
             }
 
             return null;
