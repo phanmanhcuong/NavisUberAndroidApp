@@ -21,6 +21,16 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -146,9 +156,97 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                             }
                         });
                         builder.show();
+                    } else{
+                        AlertDialog.Builder builderRequset = new AlertDialog.Builder(DetailCarOrderActivity.this);
+                        builderRequset.setTitle(getResources().getString(R.string.send_order));
+                        builderRequset.setMessage("Điểm đón: " + originPlace + "\nĐiểm đến: " + destinationPlace + "\nLoại xe: "
+                        + carType + "\nThời gian đón: " + pickupTime + "\nSố điện thoại: " + phoneNumber);
+                        builderRequset.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+
+                        builderRequset.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                JSONObject orderValue = new JSONObject();
+                                JSONObject order = new JSONObject();
+                                try {
+                                    orderValue.put(getResources().getString(R.string.origin), originPlace);
+                                    orderValue.put(getResources().getString(R.string.destination), destinationPlace);
+                                    orderValue.put(getResources().getString(R.string.car_type), carType);
+                                    orderValue.put(getResources().getString(R.string.pick_up_time), pickupTime);
+                                    orderValue.put(getResources().getString(R.string.phone_number), phoneNumber);
+
+                                    order.put(getResources().getString(R.string.order), orderValue.toString());
+
+                                    String response = postDataToWebService("url", order);
+
+                                    AlertDialog.Builder builderResponse = new AlertDialog.Builder(DetailCarOrderActivity.this);
+                                    builderResponse.setTitle(getResources().getString(R.string.webservice_response));
+                                    if(response == "Success"){
+                                        builderResponse.setMessage(getResources().getString(R.string.webservice_response_success));
+
+                                    } else{
+                                        builderResponse.setMessage(getResources().getString(R.string.webservice_respose_fail));
+
+                                    }
+
+                                    builderResponse.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    });
+
+                                    builderResponse.show();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                        builderRequset.show();
                     }
                 }
             });
+        }
+    }
+
+    private String postDataToWebService(String path, JSONObject jsonObject) {
+        StringBuilder builder = null;
+        HttpURLConnection connection;
+        try {
+            URL url = new URL(path);
+            connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+
+            OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
+            streamWriter.write(jsonObject.toString());
+            streamWriter.flush();
+
+            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String line;
+                while ((line = bufferedReader.readLine()) != null){
+                    builder.append(line);
+                }
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(builder == null){
+            return null;
+        } else{
+            return builder.toString();
         }
     }
 

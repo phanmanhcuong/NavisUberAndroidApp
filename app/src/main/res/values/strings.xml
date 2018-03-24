@@ -28,4 +28,9 @@
     <string name="route_not_found">Không tìm thấy đường đi !</string>
     <string name="list_lat_lng_bound">ListLatLngBound</string>
     <string name="latlng_point_arraylist">LatLngPointArrayList</string>
+    <string name="send_order">Gửi yêu cầu</string>
+    <string name="order">Order</string>
+    <string name="webservice_response">Thông báo gửi yêu cầu</string>
+    <string name="webservice_response_success">Yêu cầu xe thành công !</string>
+    <string name="webservice_respose_fail">Yêu cầu xe thất bại !</string>
 </resources>
