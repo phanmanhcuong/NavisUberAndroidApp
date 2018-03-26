@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -12,8 +13,11 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
@@ -31,9 +35,8 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
+
 
 /**
  * Created by Admin on 3/18/2018.
@@ -46,7 +49,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     private static String pickupTime;
     private String phoneNumber;
     private String carType;
-    private final String preferencFileName = "preference_file";
+    private static List<String> cartypeList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,9 +117,21 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
             etPhoneNumber.setText(phoneNumber);
 
+            //cartype dropdown list
+            DatabaseHelper db = new DatabaseHelper(this);
+            InsertDataFromSSMS insertDataFromSSMS = new InsertDataFromSSMS();
+            insertDataFromSSMS.execute();
+
+            cartypeList = db.getListCarType();
+
+            Spinner spinnerCarType = (Spinner)findViewById(R.id.spinner_car_type);
+            ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, cartypeList);
+            dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerCarType.setAdapter(dataAdapter);
             if(carType != null){
-                EditText etCarType = (EditText)findViewById(R.id.et_car_type);
-                etCarType.setText(carType);
+                int selectedPosition = dataAdapter.getPosition(carType);
+                spinnerCarType.setSelection(selectedPosition);
             }
 
             if(pickupTime != null){
@@ -129,8 +144,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    EditText etCarType = (EditText) findViewById(R.id.et_car_type);
-                    carType = etCarType.getText().toString();
+                    Spinner spinnerCartype = (Spinner)findViewById(R.id.spinner_car_type);
+                    int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
+                    carType = cartypeList.get(selectedItemPosition);
 
                     EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
                     pickupTime = etPickupTime.getText().toString();
@@ -265,8 +281,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                     intent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
                 }
 
-                EditText etCarType = (EditText) findViewById(R.id.et_car_type);
-                carType = etCarType.getText().toString();
+                Spinner spinnerCartype = (Spinner)findViewById(R.id.spinner_car_type);
+                int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
+                carType = cartypeList.get(selectedItemPosition);
                 if (carType != null) {
                     intent.putExtra(getResources().getString(R.string.car_type), carType);
                 }
@@ -287,6 +304,16 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class InsertDataFromSSMS extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            DatabaseHelper db = new DatabaseHelper(DetailCarOrderActivity.this);
+            db.insertDataFromSSMS();
+
+            return null;
+        }
     }
 
     //lưu dữ liệu khi ấn nút back

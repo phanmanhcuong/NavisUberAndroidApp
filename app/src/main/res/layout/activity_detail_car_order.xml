@@ -21,8 +21,8 @@
         android:paddingBottom="@dimen/tv_padding_left"
         android:paddingLeft="@dimen/tv_padding_left"/>
 
-    <EditText
-        android:id="@+id/et_car_type"
+    <Spinner
+        android:id="@+id/spinner_car_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/tv_padding_left"
