@@ -33,6 +33,8 @@
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
     <string name="webservice_respose_fail">Yêu cầu xe thất bại !</string>
+    <string name="database_name">TrackingManagement</string>
+    <string name="server_name">navistardev.cloudapp.net:1433</string>
     <string name="username">trackingadmin</string>
     <string name="password">Navis123</string>
 </resources>

@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.EditText;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +19,7 @@ import java.util.List;
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    private Context context;
     private static final String DATABASE_NAME = "Car_Database";
     private static final int DATABASE_VERSION = 1;
     private static final String TABLE_NAME = "Car";
@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     //create table
@@ -55,12 +56,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
 
                 //Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://ADMIN\\SQLEXPRESS;test_device_db;Integrated Security=True");
-                String address = "navistardev.cloudapp.net:1433";
-                String dbname = "TrackingManagement";
-                String username = "trackingadmin";
-                String password = "Navis123";
+                String servername = context.getResources().getString(R.string.server_name);
+                String dbname = context.getResources().getString(R.string.database_name);
+                String username = context.getResources().getString(R.string.username);
+                String password = context.getResources().getString(R.string.password);
 
-                Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + address + ";databaseName=" +dbname + ";user=" + username
+                Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + servername + ";databaseName=" + dbname + ";user=" + username
                 + ";password=" + password);
 
                 Statement stmt = DbConn.createStatement();
