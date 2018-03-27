@@ -113,7 +113,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 LatLng latLngOrigin = place.getLatLng();
                 
                 //đặt camera đến điểm Origin nếu chưa có điểm Đón
-                if(markerDestination == null){
+                if(placeDestination == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(latLngOrigin)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
@@ -228,7 +228,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
         }
 
-        this.showMyLocation();
+        //this.showMyLocation();
     }
 
     @Override
@@ -239,7 +239,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             if(grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(this, "Cho phép quyền truy cập !", Toast.LENGTH_SHORT).show();
-                this.showMyLocation();
+                //this.showMyLocation();
             } else{
                 Toast.makeText(this, "Từ chối quyền truy cập !", Toast.LENGTH_SHORT).show();
             }
@@ -376,8 +376,12 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
 
             if(routeWrapper == null){
-                Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
-                return;
+                if(placeOrigin != null && placeDestination != null){
+                    Toast.makeText(ShowOrderPathActivity.this, getResources().getString(R.string.route_not_found), Toast.LENGTH_LONG).show();
+                    return;
+                }else {
+                    return;
+                }
             }
             ArrayList<LatLng> listLatLngBound = routeWrapper.getLatLngBound();
 

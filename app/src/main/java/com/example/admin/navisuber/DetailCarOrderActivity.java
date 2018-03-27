@@ -1,22 +1,24 @@
 package com.example.admin.navisuber;
 
-import android.content.Context;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatEditText;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +46,7 @@ import java.util.List;
  */
 
 public class DetailCarOrderActivity extends AppCompatActivity {
+    private static final int WAITING_DIALOG_RETURN = 1;
     private static String originPlace;
     private static String destinationPlace;
     private static LatLng destinationLatlng;
@@ -160,8 +164,8 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                     EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
                     phoneNumber = etPhoneNumber.getText().toString();
 
-                    if (originPlace == null || destinationPlace == null || phoneNumber == null || carType == null
-                            || pickupTime == null) {
+                    if (originPlace == null || destinationPlace == null || phoneNumber.isEmpty() || carType == null
+                            || pickupTime.isEmpty()) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(DetailCarOrderActivity.this);
                         builder.setTitle(getResources().getString(R.string.warning_dialog));
                         builder.setMessage(getResources().getString(R.string.waring_message));
@@ -200,24 +204,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
                                     String response = postDataToWebService("url", order);
 
-                                    AlertDialog.Builder builderResponse = new AlertDialog.Builder(DetailCarOrderActivity.this);
-                                    builderResponse.setTitle(getResources().getString(R.string.webservice_response));
-                                    if(response == "Success"){
-                                        builderResponse.setMessage(getResources().getString(R.string.webservice_response_success));
-
-                                    } else{
-                                        builderResponse.setMessage(getResources().getString(R.string.webservice_respose_fail));
+                                    if(showWaitingDialog(order) == WAITING_DIALOG_RETURN) {
 
                                     }
-
-                                    builderResponse.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-
-                                        }
-                                    });
-
-                                    builderResponse.show();
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -230,6 +219,44 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             });
         }
     }
+
+    private int showWaitingDialog(final JSONObject order) {
+        Dialog waitingDialog = new Dialog(DetailCarOrderActivity.this);
+        waitingDialog.setContentView(R.layout.waiting_dialog_layout);
+        waitingDialog.setCancelable(false);
+
+        final Button btn_resend_order = (Button)waitingDialog.findViewById(R.id.btn_resend_order);
+        btn_resend_order.setTextColor(ContextCompat.getColor(DetailCarOrderActivity.this, R.color.colorGrey));
+        btn_resend_order.setEnabled(false);
+
+        final TextView tv_dialog_msg = (TextView)waitingDialog.findViewById(R.id.tv_dialog_message);
+
+        new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                tv_dialog_msg.setText(getResources().getString(R.string.waiting_dialog_message) + " " + millisUntilFinished/1000 + " giây.");
+            }
+
+            @Override
+            public void onFinish() {
+                btn_resend_order.setEnabled(true);
+                btn_resend_order.setTextColor(ContextCompat.getColor(DetailCarOrderActivity.this, R.color.colorAccent));
+            }
+        }.start();
+
+        Window dialogWindow = waitingDialog.getWindow();
+        dialogWindow.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        waitingDialog.show();
+
+        btn_resend_order.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                postDataToWebService("url", order);
+            }
+        });
+        return WAITING_DIALOG_RETURN;
+    }
+
 
     private String postDataToWebService(String path, JSONObject jsonObject) {
         StringBuilder builder = null;
@@ -290,13 +317,13 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
                 EditText etPickUpTime = (EditText) findViewById(R.id.et_pick_up_time);
                 pickupTime = etPickUpTime.getText().toString();
-                if (pickupTime != null) {
+                if (!pickupTime.isEmpty()) {
                     intent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
                 }
 
                 EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
                 phoneNumber = etPhoneNumber.getText().toString();
-                if (phoneNumber != null) {
+                if (!phoneNumber.isEmpty()) {
                     intent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
                 }
 

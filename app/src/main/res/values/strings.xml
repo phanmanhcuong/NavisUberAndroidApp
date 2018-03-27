@@ -37,4 +37,6 @@
     <string name="server_name">navistardev.cloudapp.net:1433</string>
     <string name="username">trackingadmin</string>
     <string name="password">Navis123</string>
+    <string name="waiting_dialog_message">Chờ xử lí yêu cầu trong: \</string>
+    <string name="resend_order">Gửi lại yêu cầu</string>
 </resources>
