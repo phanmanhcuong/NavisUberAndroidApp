@@ -177,43 +177,46 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                         });
                         builder.show();
                     } else{
-                        AlertDialog.Builder builderRequset = new AlertDialog.Builder(DetailCarOrderActivity.this);
-                        builderRequset.setTitle(getResources().getString(R.string.send_order));
-                        builderRequset.setMessage("Điểm đón: " + originPlace + "\nĐiểm đến: " + destinationPlace + "\nLoại xe: "
+                        AlertDialog.Builder builderRequest = new AlertDialog.Builder(DetailCarOrderActivity.this);
+                        builderRequest.setTitle(getResources().getString(R.string.send_order));
+                        builderRequest.setMessage("Điểm đón: " + originPlace + "\nĐiểm đến: " + destinationPlace + "\nLoại xe: "
                         + carType + "\nThời gian đón: " + pickupTime + "\nSố điện thoại: " + phoneNumber);
-                        builderRequset.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                        builderRequest.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
                             }
                         });
 
-                        builderRequset.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        builderRequest.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 JSONObject orderValue = new JSONObject();
                                 JSONObject order = new JSONObject();
                                 try {
-                                    orderValue.put(getResources().getString(R.string.origin), originPlace);
-                                    orderValue.put(getResources().getString(R.string.destination), destinationPlace);
-                                    orderValue.put(getResources().getString(R.string.car_type), carType);
-                                    orderValue.put(getResources().getString(R.string.pick_up_time), pickupTime);
-                                    orderValue.put(getResources().getString(R.string.phone_number), phoneNumber);
+                                    orderValue.put(getResources().getString(R.string.json_origin), originPlace);
+                                    orderValue.put(getResources().getString(R.string.json_destination), destinationPlace);
+                                    orderValue.put(getResources().getString(R.string.json_cartype), carType);
+                                    orderValue.put(getResources().getString(R.string.json_pickup_time), pickupTime);
+                                    orderValue.put(getResources().getString(R.string.json_phone_number), phoneNumber);
 
                                     order.put(getResources().getString(R.string.order), orderValue.toString());
 
-                                    String response = postDataToWebService("url", order);
+                                    PostDataToWebService postDataToWebService = new PostDataToWebService(order);
+                                    postDataToWebService.execute();
 
-                                    if(showWaitingDialog(order) == WAITING_DIALOG_RETURN) {
+                                    //String response = postDataToWebService(getResources().getString(R.string.webservice_url), order);
 
-                                    }
+                                    //dialog thông báo gửi yêu cầu thành công hay thất bại
+
+                                    //if(showWaitingDialog(order) == WAITING_DIALOG_RETURN);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
                             }
                         });
 
-                        builderRequset.show();
+                        builderRequest.show();
                     }
                 }
             });
@@ -251,47 +254,47 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         btn_resend_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                postDataToWebService("url", order);
+                //postDataToWebService(getResources().getString(R.string.webservice_url), order);
             }
         });
         return WAITING_DIALOG_RETURN;
     }
 
 
-    private String postDataToWebService(String path, JSONObject jsonObject) {
-        StringBuilder builder = null;
-        HttpURLConnection connection;
-        try {
-            URL url = new URL(path);
-            connection = (HttpURLConnection)url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-
-            OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
-            streamWriter.write(jsonObject.toString());
-            streamWriter.flush();
-
-            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
-                InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String line;
-                while ((line = bufferedReader.readLine()) != null){
-                    builder.append(line);
-                }
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if(builder == null){
-            return null;
-        } else{
-            return builder.toString();
-        }
-    }
+//    private String postDataToWebService(String path, JSONObject jsonObject) {
+//        StringBuilder builder = null;
+//        HttpURLConnection connection;
+//        try {
+//            URL url = new URL(path);
+//            connection = (HttpURLConnection)url.openConnection();
+//            connection.setRequestMethod("POST");
+//            connection.setRequestProperty("Content-Type", "application/json");
+//            connection.setRequestProperty("Accept", "application/json");
+//
+//            OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
+//            streamWriter.write(jsonObject.toString());
+//            streamWriter.flush();
+//
+//            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+//                InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+//                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+//                String line;
+//                while ((line = bufferedReader.readLine()) != null){
+//                    builder.append(line);
+//                }
+//            }
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if(builder == null){
+//            return null;
+//        } else{
+//            return builder.toString();
+//        }
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -340,6 +343,73 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             db.insertDataFromSSMS();
 
             return null;
+        }
+    }
+
+    //thread for send request to web service
+    private class PostDataToWebService  extends AsyncTask<Void, Void, String>{
+        JSONObject jsonObject;
+
+        public PostDataToWebService(JSONObject jsonObject) {
+            this.jsonObject = jsonObject;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            StringBuilder builder = null;
+            HttpURLConnection connection;
+            try {
+                URL url = new URL(getResources().getString(R.string.webservice_url));
+                connection = (HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Accept", "application/json");
+
+                OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
+                streamWriter.write(this.jsonObject.toString());
+                streamWriter.flush();
+
+                String responseCode = connection.getResponseMessage();
+                int code = connection.getResponseCode();
+                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null){
+                        builder.append(line);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //response
+            if(builder == null){
+                return null;
+            } else{
+                return builder.toString();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String response){
+            AlertDialog.Builder responseBuilder = new AlertDialog.Builder(DetailCarOrderActivity.this);
+            responseBuilder.setTitle(getResources().getString(R.string.webservice_response));
+            responseBuilder.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+
+            if(response == getResources().getString(R.string.success_response)){
+                responseBuilder.setMessage(getResources().getString(R.string.webservice_response_success));
+            } else{
+                responseBuilder.setMessage(getResources().getString(R.string.webservice_response_fail));
+            }
+            responseBuilder.show();
         }
     }
 
