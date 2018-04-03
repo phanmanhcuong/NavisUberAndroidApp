@@ -92,6 +92,10 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 if(ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 googleMap.setMyLocationEnabled(true);
+
+                //set camera to VN
+                LatLngBounds VNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(VNBound, 5));
             }
         });
 

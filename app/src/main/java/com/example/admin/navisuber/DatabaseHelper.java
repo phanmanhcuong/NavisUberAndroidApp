@@ -7,6 +7,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -52,31 +67,72 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void insertDataFromSSMS (){
         int count = this.getCarTypeCount();
         if(count == 0) {
-            try{
-                Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
+            StringBuilder builder = null;
+            HttpURLConnection connection;
+            try {
+                URL url = new URL(context.getString(R.string.webservice_get_car_type_url));
+                connection = (HttpURLConnection)url.openConnection();
 
-                //Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://ADMIN\\SQLEXPRESS;test_device_db;Integrated Security=True");
-                String servername = context.getResources().getString(R.string.server_name);
-                String dbname = context.getResources().getString(R.string.database_name);
-                String username = context.getResources().getString(R.string.username);
-                String password = context.getResources().getString(R.string.password);
+                String responseCode = connection.getResponseMessage();
+                int code = connection.getResponseCode();
+                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null){
+                        builder.append(line);
+                    }
 
-                Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + servername + ";databaseName=" + dbname + ";user=" + username
-                + ";password=" + password);
+                    String responseCarType = builder.toString();
 
-                Statement stmt = DbConn.createStatement();
-                ResultSet resultSet = stmt.executeQuery("SELECT ten_loai_xe FROM dbo.Lst_LoaiXe");
-                while(resultSet.next()){
-                    String cartype = resultSet.getString("ten_loai_xe");
-                    Car car = new Car(cartype);
-                    this.addCar(car);
+                    JSONObject jsonResponse = new JSONObject(responseCarType);
+                    JSONArray jsonArray = jsonResponse.getJSONArray("carTypes");
+                    for (int i = 0; i <jsonArray.length(); i++){
+                        JSONObject cartype = (JSONObject)jsonArray.get(i);
+                        Car car = new Car(cartype.toString());
+                        this.addCar(car);
+                    }
+
+//                    CarJson gson = new Gson().fromJson(responseCarType, CarJson.class);
+//                    String carTypes[] = gson.getCarType();
+//                    for (String carType : carTypes) {
+//                        Car car = new Car(carType);
+//                        this.addCar(car);
+//                    }
                 }
-
-                DbConn.close();
-
-            } catch (Exception e) {
-                Log.e("error", e.toString());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+
+//            try{
+//                Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
+//
+//                //Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://ADMIN\\SQLEXPRESS;test_device_db;Integrated Security=True");
+//                String servername = context.getResources().getString(R.string.server_name);
+//                String dbname = context.getResources().getString(R.string.database_name);
+//                String username = context.getResources().getString(R.string.username);
+//                String password = context.getResources().getString(R.string.password);
+//
+//                Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + servername + ";databaseName=" + dbname + ";user=" + username
+//                + ";password=" + password);
+//
+//                Statement stmt = DbConn.createStatement();
+//                ResultSet resultSet = stmt.executeQuery("SELECT ten_loai_xe FROM dbo.Lst_LoaiXe");
+//                while(resultSet.next()){
+//                    String cartype = resultSet.getString("ten_loai_xe");
+//                    Car car = new Car(cartype);
+//                    this.addCar(car);
+//                }
+//
+//                DbConn.close();
+//
+//            } catch (Exception e) {
+//                Log.e("error", e.toString());
+//            }
         }
     }
 
@@ -121,5 +177,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         return cartypeList;
+    }
+
+    public static class CarJson {
+        public static String carType[];
+
+        public void setCarType(String carType[]) {
+            this.carType = carType;
+        }
+
+        public String[] getCarType() {
+
+            return carType;
+        }
+
+        public CarJson(String[] carType) {
+
+            this.carType = carType;
+        }
     }
 }

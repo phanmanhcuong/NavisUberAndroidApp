@@ -29,16 +29,24 @@ import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -191,28 +199,16 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                         builderRequest.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                JSONObject orderValue = new JSONObject();
-                                JSONObject order = new JSONObject();
-                                try {
-                                    orderValue.put(getResources().getString(R.string.json_origin), originPlace);
-                                    orderValue.put(getResources().getString(R.string.json_destination), destinationPlace);
-                                    orderValue.put(getResources().getString(R.string.json_cartype), carType);
-                                    orderValue.put(getResources().getString(R.string.json_pickup_time), pickupTime);
-                                    orderValue.put(getResources().getString(R.string.json_phone_number), phoneNumber);
+                                //HashMap
+                                HashMap<String, String> carOrder = new HashMap<>();
+                                carOrder.put(getResources().getString(R.string.json_origin), originPlace);
+                                carOrder.put(getResources().getString(R.string.json_destination), destinationPlace);
+                                carOrder.put(getResources().getString(R.string.json_cartype), carType);
+                                carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
+                                carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
 
-                                    order.put(getResources().getString(R.string.order), orderValue.toString());
-
-                                    PostDataToWebService postDataToWebService = new PostDataToWebService(order);
-                                    postDataToWebService.execute();
-
-                                    //String response = postDataToWebService(getResources().getString(R.string.webservice_url), order);
-
-                                    //dialog thông báo gửi yêu cầu thành công hay thất bại
-
-                                    //if(showWaitingDialog(order) == WAITING_DIALOG_RETURN);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                                 PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
+                                 postDataToWebService.execute();
                             }
                         });
 
@@ -346,12 +342,12 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         }
     }
 
-    //thread for send request to web service
-    private class PostDataToWebService  extends AsyncTask<Void, Void, String>{
-        JSONObject jsonObject;
 
-        public PostDataToWebService(JSONObject jsonObject) {
-            this.jsonObject = jsonObject;
+    private class PostDataToWebService  extends AsyncTask<Void, Void, String>{
+        private HashMap<String, String> carOrder;
+
+        public PostDataToWebService(HashMap<String, String> carOrder) {
+            this.carOrder = carOrder;
         }
 
         @Override
@@ -362,15 +358,18 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 URL url = new URL(getResources().getString(R.string.webservice_url));
                 connection = (HttpURLConnection)url.openConnection();
                 connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("Accept", "application/json");
+                connection.setDoInput(true);
+                connection.setDoOutput(true);
 
-                OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
-                streamWriter.write(this.jsonObject.toString());
+                //OutputStream
+                OutputStream os = connection.getOutputStream();
+                BufferedWriter streamWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                streamWriter.write(ConvertJsonObjectToEncodeUrl(carOrder));
+
                 streamWriter.flush();
+                streamWriter.close();
+                os.close();
 
-                String responseCode = connection.getResponseMessage();
-                int code = connection.getResponseCode();
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
                     InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -411,6 +410,24 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             }
             responseBuilder.show();
         }
+    }
+
+    //convert hashmap
+    private String ConvertJsonObjectToEncodeUrl(HashMap<String, String> carOrder) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, String> entry : carOrder.entrySet()) {
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+        }
+
+        return result.toString();
     }
 
     //lưu dữ liệu khi ấn nút back
