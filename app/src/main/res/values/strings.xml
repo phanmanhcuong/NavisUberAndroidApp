@@ -29,14 +29,23 @@
     <string name="list_lat_lng_bound">ListLatLngBound</string>
     <string name="latlng_point_arraylist">LatLngPointArrayList</string>
     <string name="send_order">Gửi yêu cầu</string>
-    <string name="order">Order</string>
+    <string name="order">carOrder</string>
+    <string name="webservice_url">http://192.168.0.102:62518/Service1.svc/CarOrderRequestReceiver</string>
+    <string name="webservice_get_car_type_url">http://192.168.0.102:62518/Service1.svc/GetCarType</string>
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
-    <string name="webservice_respose_fail">Yêu cầu xe thất bại !</string>
+    <string name="webservice_response_fail">Yêu cầu xe thất bại !</string>
     <string name="database_name">TrackingManagement</string>
     <string name="server_name">navistardev.cloudapp.net:1433</string>
     <string name="username">trackingadmin</string>
     <string name="password">Navis123</string>
     <string name="waiting_dialog_message">Chờ xử lí yêu cầu trong: \</string>
     <string name="resend_order">Gửi lại yêu cầu</string>
+    <string name="success_response">Success</string>
+    <string name="fail_response">Fail</string>
+    <string name="json_origin">originPlace</string>
+    <string name="json_destination">destinationPlace</string>
+    <string name="json_cartype">carType</string>
+    <string name="json_pickup_time">pickupTime</string>
+    <string name="json_phone_number">phoneNumber</string>
 </resources>
