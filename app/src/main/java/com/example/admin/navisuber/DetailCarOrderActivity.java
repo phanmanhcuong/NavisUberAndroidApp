@@ -207,8 +207,8 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
 
-                                 PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
-                                 postDataToWebService.execute();
+                                PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
+                                postDataToWebService.execute();
                             }
                         });
 
@@ -352,7 +352,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            StringBuilder builder = null;
+            StringBuilder builder = new StringBuilder();
             HttpURLConnection connection;
             try {
                 URL url = new URL(getResources().getString(R.string.webservice_url));
@@ -364,17 +364,18 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 //OutputStream
                 OutputStream os = connection.getOutputStream();
                 BufferedWriter streamWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                streamWriter.write(ConvertJsonObjectToEncodeUrl(carOrder));
+                streamWriter.write(ConvertMapObjectToEncodeUrl(carOrder));
 
                 streamWriter.flush();
                 streamWriter.close();
                 os.close();
 
+                int responsecode = connection.getResponseCode();
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
                     InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                     String line;
-                    while ((line = bufferedReader.readLine()) != null){
+                    if ((line = bufferedReader.readLine()) != null){
                         builder.append(line);
                     }
                 }
@@ -403,7 +404,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
 
-            if(response == getResources().getString(R.string.success_response)){
+            if(response.contains(getResources().getString(R.string.success_response))){
                 responseBuilder.setMessage(getResources().getString(R.string.webservice_response_success));
             } else{
                 responseBuilder.setMessage(getResources().getString(R.string.webservice_response_fail));
@@ -413,7 +414,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     }
 
     //convert hashmap
-    private String ConvertJsonObjectToEncodeUrl(HashMap<String, String> carOrder) throws UnsupportedEncodingException {
+    private String ConvertMapObjectToEncodeUrl(HashMap<String, String> carOrder) throws UnsupportedEncodingException {
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (Map.Entry<String, String> entry : carOrder.entrySet()) {

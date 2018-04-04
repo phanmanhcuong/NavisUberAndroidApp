@@ -93,9 +93,9 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                         && ContextCompat.checkSelfPermission(ShowOrderPathActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 googleMap.setMyLocationEnabled(true);
 
-                //set camera to VN
-                LatLngBounds VNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(VNBound, 5));
+                //set camera to Ha Noi
+                LatLngBounds HNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(HNBound, 5));
             }
         });
 
