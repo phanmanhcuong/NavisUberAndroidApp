@@ -61,9 +61,11 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private static GoogleMap googleMap;
     private static Polyline line;
     private Marker markerDestination;
+    private Marker markerOrigin;
     private static String placeOrigin;
     private static String placeDestination;
     private static LatLng destinationLatlng;
+    private static LatLng originLatlng;
     private static RouteWrapper sRouteWrapper;
     private static LatLngBounds sLatLngBounds;
 
@@ -77,6 +79,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         if(bundle != null){
             phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
             placeOrigin = bundle.getString(getResources().getString(R.string.origin));
+            originLatlng = bundle.getParcelable(getResources().getString(R.string.origin_latlng));
             placeDestination = bundle.getString(getResources().getString(R.string.destination));
             destinationLatlng = bundle.getParcelable(getResources().getString(R.string.destination_latlng));
         }
@@ -95,17 +98,19 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
                 //set camera to Ha Noi
                 LatLngBounds HNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(HNBound, 5));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(HNBound, 5));
+
+                //set camera to origin or destination or show path if exist
+                SetCamera();
             }
         });
 
         final PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
-        if(placeOrigin != null){
-            //ko hiểu sao setText ko đc
-            autocompleteOrigin.setText(placeOrigin);
-        }else{
-            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
-        }
+//        if(placeOrigin != null){
+//            autocompleteOrigin.setText(placeOrigin);
+//        }else{
+//            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+//        }
         //dùng cho cả 2 fragment
         AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
         autocompleteOrigin.setFilter(autocompleteFilter);
@@ -113,18 +118,25 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             @Override
             public void onPlaceSelected(Place place) {
                 placeOrigin = place.getName().toString();
-
-                LatLng latLngOrigin = place.getLatLng();
+                originLatlng = place.getLatLng();
                 
                 //đặt camera đến điểm Origin nếu chưa có điểm Đón
+                if(markerOrigin != null) markerOrigin.remove();
+
+                //Marker cho map
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(getResources().getString(R.string.origin));
+                markerOptions.position(originLatlng);
+                markerOrigin = googleMap.addMarker(markerOptions);
+                markerOrigin.showInfoWindow();
+
                 if(placeDestination == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(latLngOrigin)             // Sets the center of the map to location user
+                            .target(originLatlng)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                 }
-                //Nếu đã có điểm đón thì vẽ đường đi
                 else{
                     ShowDirectionTask showDirectionTask = new ShowDirectionTask();
                     showDirectionTask.execute();
@@ -146,32 +158,27 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             }
         });
 
+
         final PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
-        if(placeDestination != null){
-            autocompleteDestination.setText(placeDestination);
-        } else{
-            autocompleteDestination.setHint(getResources().getString(R.string.destination));
-        }
         autocompleteDestination.setFilter(autocompleteFilter);
         autocompleteDestination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 if(markerDestination != null) markerDestination.remove();
 
-                LatLng latLngDestination = place.getLatLng();
                 placeDestination = String.valueOf(place.getName());
                 destinationLatlng = place.getLatLng();
 
                 //Marker cho map
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.title(getResources().getString(R.string.destination));
-                markerOptions.position(latLngDestination);
+                markerOptions.position(destinationLatlng);
                 markerDestination = googleMap.addMarker(markerOptions);
                 markerDestination.showInfoWindow();
 
                 if(placeOrigin == null){
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(latLngDestination)             // Sets the center of the map to location user
+                            .target(destinationLatlng)             // Sets the center of the map to location user
                             .zoom(15)                   // Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
@@ -206,14 +213,94 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                     carType = bundle.getString(getResources().getString(R.string.car_type));
                     pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
                 }
-                DetailCarOrder(placeOrigin, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
+                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
             }
         });
 
-        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order
+//        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order, nếu chỉ có 1 trong 2 điểm thì move camera
+//        if(placeOrigin != null && placeDestination != null){
+//            autocompleteOrigin.setText(placeOrigin);
+//            autocompleteDestination.setText(placeDestination);
+//
+//            ShowDirectionTask showDirectionTask = new ShowDirectionTask();
+//            showDirectionTask.execute();
+//        } else if (placeOrigin != null){
+//            autocompleteOrigin.setText(placeOrigin);
+//
+//            MarkerOptions markerOptions = new MarkerOptions();
+//            markerOptions.title(getResources().getString(R.string.origin));
+//            markerOptions.position(originLatlng);
+//            markerOrigin = googleMap.addMarker(markerOptions);
+//            markerOrigin.showInfoWindow();
+//
+//            CameraPosition cameraPosition = new CameraPosition.Builder()
+//                    .target(originLatlng)             // Sets the center of the map to location user
+//                    .zoom(15)                   // Sets the zoom
+//                    .build();                   // Creates a CameraPosition from the builder
+//            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+//        } else if (placeDestination != null){
+//            autocompleteOrigin.setText(placeDestination);
+//
+//            MarkerOptions markerOptions = new MarkerOptions();
+//            markerOptions.title(getResources().getString(R.string.destination));
+//            markerOptions.position(destinationLatlng);
+//            markerDestination = googleMap.addMarker(markerOptions);
+//            markerDestination.showInfoWindow();
+//
+//            CameraPosition cameraPosition = new CameraPosition.Builder()
+//                    .target(destinationLatlng)             // Sets the center of the map to location user
+//                    .zoom(15)                   // Sets the zoom
+//                    .build();                   // Creates a CameraPosition from the builder
+//            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+//        } else{
+//            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+//            autocompleteDestination.setHint(getResources().getString(R.string.destination));
+//        }
+    }
+
+    //set camera to origin or destination or show path if exist
+    private void SetCamera() {
+        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order, nếu chỉ có 1 trong 2 điểm thì move camera
+        PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+        PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+
         if(placeOrigin != null && placeDestination != null){
+            autocompleteOrigin.setText(placeOrigin);
+            autocompleteDestination.setText(placeDestination);
+
             ShowDirectionTask showDirectionTask = new ShowDirectionTask();
             showDirectionTask.execute();
+        } else if (placeOrigin != null){
+            autocompleteOrigin.setText(placeOrigin);
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.title(getResources().getString(R.string.origin));
+            markerOptions.position(originLatlng);
+            markerOrigin = googleMap.addMarker(markerOptions);
+            markerOrigin.showInfoWindow();
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(originLatlng)             // Sets the center of the map to location user
+                    .zoom(15)                   // Sets the zoom
+                    .build();                   // Creates a CameraPosition from the builder
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else if (placeDestination != null){
+            autocompleteDestination.setText(placeDestination);
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.title(getResources().getString(R.string.destination));
+            markerOptions.position(destinationLatlng);
+            markerDestination = googleMap.addMarker(markerOptions);
+            markerDestination.showInfoWindow();
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(destinationLatlng)             // Sets the center of the map to location user
+                    .zoom(15)                   // Sets the zoom
+                    .build();                   // Creates a CameraPosition from the builder
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else{
+            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+            autocompleteDestination.setHint(getResources().getString(R.string.destination));
         }
     }
 
@@ -371,6 +458,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             super.onPostExecute(routeWrapper);
 
             //marker khi đc back từ màn hình detail order
+            if(markerOrigin == null){
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(getResources().getString(R.string.origin));
+                markerOptions.position(originLatlng);
+                markerOrigin = googleMap.addMarker(markerOptions);
+                markerOrigin.showInfoWindow();
+            }
+
             if(markerDestination == null){
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.title(getResources().getString(R.string.destination));
@@ -480,7 +575,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 //    }
 
     //chuyển data sang qua intent sang màn hình detail car order
-    private void DetailCarOrder(final String placeOrigin, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime, String phoneNumber) {
+    private void DetailCarOrder(final String placeOrigin, final LatLng originLatlng, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime, String phoneNumber) {
         final Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
         detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
 
@@ -502,6 +597,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     if(placeOrigin != null){
                         detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
+                        detailCarOrderIntent.putExtra(getResources().getString(R.string.origin_latlng), originLatlng);
                     }
 
                     if(placeDestination != null){
@@ -518,6 +614,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             builder.show();
         } else{
             detailCarOrderIntent.putExtra(getResources().getString(R.string.origin), placeOrigin);
+            detailCarOrderIntent.putExtra(getResources().getString(R.string.origin_latlng), originLatlng);
             detailCarOrderIntent.putExtra(getResources().getString(R.string.destination), placeDestination);
             detailCarOrderIntent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
             detailCarOrderIntent.putExtra(getResources().getString(R.string.car_type), carType);
@@ -529,45 +626,46 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
     //xóa điểm đến hoặc điểm đón ngay khi ấn dấu x
     private class PlaceAutocompleteClearButtonListener extends AsyncTask<Void, Void, Void> {
-        private int flag;
+            private int flag;
 
-        public PlaceAutocompleteClearButtonListener(int flag) {
-            this.flag = flag;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
-                placeOrigin = null;
-
-            } else{
-                placeDestination = null;
-                destinationLatlng = null;
+            public PlaceAutocompleteClearButtonListener(int flag) {
+                this.flag = flag;
             }
 
-            return null;
-        }
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                    placeOrigin = null;
+                    originLatlng = null;
+                } else{
+                    placeDestination = null;
+                    destinationLatlng = null;
+                }
 
-        @Override
-        protected void onPostExecute(Void params){
-            super.onPostExecute(params);
-
-            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
-                PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
-                autocompleteOrigin.setText("");
-                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
-            } else{
-                PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
-                autocompleteDestination.setText("");
-                autocompleteDestination.setHint(getResources().getString(R.string.destination));
-                markerDestination.remove();
+                return null;
             }
 
-            if (line != null) {
-                line.remove();
-            }
+            @Override
+            protected void onPostExecute(Void params){
+                super.onPostExecute(params);
 
-        }
+                if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                    PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+                    autocompleteOrigin.setText("");
+                    autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+                    markerOrigin.remove();
+                } else{
+                    PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+                    autocompleteDestination.setText("");
+                    autocompleteDestination.setHint(getResources().getString(R.string.destination));
+                    markerDestination.remove();
+                }
+
+                if (line != null) {
+                    line.remove();
+                }
+
+            }
 
     }
 }

@@ -32,19 +32,16 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -55,9 +52,12 @@ import java.util.Map;
 
 public class DetailCarOrderActivity extends AppCompatActivity {
     private static final int WAITING_DIALOG_RETURN = 1;
+    private static final int ORIGIN_ON_CLEAR_BUTTON_CLICKED = 1;
+    private static final int DESTINATION_ON_CLEAR_BUTTON_CLICKED = 2;
     private static String originPlace;
     private static String destinationPlace;
     private static LatLng destinationLatlng;
+    private static LatLng originLatlng;
     private static String pickupTime;
     private String phoneNumber;
     private String carType;
@@ -75,6 +75,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             originPlace = bundle.getString(getResources().getString(R.string.origin));
+            originLatlng = bundle.getParcelable(getResources().getString(R.string.origin_latlng));
             destinationPlace = bundle.getString(getResources().getString(R.string.destination));
             destinationLatlng = bundle.getParcelable(getResources().getString(R.string.destination_latlng));
             phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
@@ -97,10 +98,20 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 @Override
                 public void onPlaceSelected(Place place) {
                     originPlace = place.getName().toString();
+                    originLatlng = place.getLatLng();
                 }
 
                 @Override
                 public void onError(Status status) {
+
+                }
+            });
+
+            autocompleteOrigin.getView().findViewById(R.id.place_autocomplete_clear_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PlaceAutocompleteClearButtonListener placeAutocompleteClearButtonListener = new PlaceAutocompleteClearButtonListener(ORIGIN_ON_CLEAR_BUTTON_CLICKED);
+                    placeAutocompleteClearButtonListener.execute();
 
                 }
             });
@@ -126,6 +137,15 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
 
+            autocompleteDestination.getView().findViewById(R.id.place_autocomplete_clear_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PlaceAutocompleteClearButtonListener placeAutocompleteClearButtonListener = new PlaceAutocompleteClearButtonListener(DESTINATION_ON_CLEAR_BUTTON_CLICKED);
+                    placeAutocompleteClearButtonListener.execute();
+
+                }
+            });
+
             EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
             etPhoneNumber.setText(phoneNumber);
 
@@ -146,6 +166,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 spinnerCarType.setSelection(selectedPosition);
             }
 
+            //pick up time
             if(pickupTime != null){
                 EditText etPickupTime = (EditText)findViewById(R.id.et_pick_up_time);
                 etPickupTime.setText(pickupTime);
@@ -217,6 +238,42 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    //xóa điểm đến hoặc điểm đón ngay khi ấn dấu x
+    private class PlaceAutocompleteClearButtonListener extends AsyncTask<Void, Void, Void> {
+        private int flag;
+
+        public PlaceAutocompleteClearButtonListener(int flag) {
+            this.flag = flag;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                originPlace = null;
+            } else{
+                destinationPlace = null;
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void params){
+            super.onPostExecute(params);
+
+            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+                PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
+                autocompleteOrigin.setText("");
+                autocompleteOrigin.setHint(getResources().getString(R.string.origin));
+            } else{
+                PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
+                autocompleteDestination.setText("");
+                autocompleteDestination.setHint(getResources().getString(R.string.destination));
+            }
+        }
+
     }
 
     private int showWaitingDialog(final JSONObject order) {
@@ -300,6 +357,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
                 if (originPlace != null) {
                     intent.putExtra(getResources().getString(R.string.origin), originPlace);
+                    intent.putExtra(getResources().getString(R.string.origin_latlng), originLatlng);
                 }
 
                 if (destinationPlace != null) {
