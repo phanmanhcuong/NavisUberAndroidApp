@@ -5,8 +5,12 @@
     <string name="phone_number">phoneNumber</string>
     <string name="origin">Điểm đón</string>
     <string name="origin_latlng">OriginLatlng</string>
+    <string name="origin_lat">originLatitude</string>
+    <string name="origin_long">originLongitude</string>
     <string name="destination">Điểm đến</string>
     <string name="destination_latlng">DestinationLatlng</string>
+    <string name="destination_lat">destinationLat</string>
+    <string name="destination_long">destinationLong</string>
     <string name="google_api_key">AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs</string>
     <string name="latlng_bound">LatLngBound</string>
     <string name="latlng_arraylist">LatLngArraylist</string>
@@ -31,7 +35,7 @@
     <string name="latlng_point_arraylist">LatLngPointArrayList</string>
     <string name="send_order">Gửi yêu cầu</string>
     <string name="order">carOrder</string>
-    <string name="webservice_url">http://*:62518/Service1.svc/CarOrderRequestReceiver</string>
+    <string name="webservice_url">http://192.168.0.102:62518/Service1.svc/CarOrderRequestReceiver</string>
     <string name="webservice_get_car_type_url">http://192.168.0.102:62518/Service1.svc/GetCarType</string>
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
@@ -47,6 +51,7 @@
     <string name="json_origin">originPlace</string>
     <string name="json_destination">destinationPlace</string>
     <string name="json_cartype">carType</string>
+    <string name="json_order_time">orderTime</string>
     <string name="json_pickup_time">pickupTime</string>
     <string name="json_phone_number">phoneNumber</string>
 </resources>
