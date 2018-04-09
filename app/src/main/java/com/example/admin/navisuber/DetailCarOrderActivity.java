@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -41,6 +42,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,14 +186,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                     int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
                     carType = cartypeList.get(selectedItemPosition);
 
+                    //not compare with current time yet
                     EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
                     pickupTime = etPickupTime.getText().toString();
-//                    SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-//                    try {
-//                        pickupTime = format.parse(etPickupTime.getText().toString());
-//                    } catch (ParseException e) {
-//                        e.printStackTrace();
-//                    }
 
                     EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
                     phoneNumber = etPhoneNumber.getText().toString();
@@ -221,10 +221,19 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 //HashMap
+                                Date currentTime = Calendar.getInstance().getTime();
+                                SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                String currentTimeString = format.format(currentTime);
+
                                 HashMap<String, String> carOrder = new HashMap<>();
                                 carOrder.put(getResources().getString(R.string.json_origin), originPlace);
+                                carOrder.put(getResources().getString(R.string.origin_lat), String.valueOf(originLatlng.latitude));
+                                carOrder.put(getResources().getString(R.string.origin_long), String.valueOf(originLatlng.longitude));
                                 carOrder.put(getResources().getString(R.string.json_destination), destinationPlace);
+                                carOrder.put(getResources().getString(R.string.destination_lat), String.valueOf(destinationLatlng.latitude));
+                                carOrder.put(getResources().getString(R.string.destination_long), String.valueOf(destinationLatlng.longitude));
                                 carOrder.put(getResources().getString(R.string.json_cartype), carType);
+                                carOrder.put(getResources().getString(R.string.json_order_time), currentTimeString);
                                 carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
 

@@ -67,7 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void insertDataFromSSMS (){
         int count = this.getCarTypeCount();
         if(count == 0) {
-            StringBuilder builder = null;
+            StringBuilder builder = new StringBuilder();
             HttpURLConnection connection;
             try {
                 URL url = new URL(context.getString(R.string.webservice_get_car_type_url));
@@ -86,10 +86,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     String responseCarType = builder.toString();
 
                     JSONObject jsonResponse = new JSONObject(responseCarType);
-                    JSONArray jsonArray = jsonResponse.getJSONArray("carTypes");
+                    JSONArray jsonArray = jsonResponse.getJSONArray("GetCarTypeResult");
                     for (int i = 0; i <jsonArray.length(); i++){
-                        JSONObject cartype = (JSONObject)jsonArray.get(i);
-                        Car car = new Car(cartype.toString());
+                        Car car = new Car(jsonArray.get(i).toString());
                         this.addCar(car);
                     }
 
@@ -145,6 +144,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         //insert 1 row to table
         db.insert(TABLE_NAME, null, values);
 
+        db.close();
+    }
+
+    public void deleteAll() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        if (db == null) {
+            return;
+        }
+        db.delete(TABLE_NAME, null, null);
         db.close();
     }
 
