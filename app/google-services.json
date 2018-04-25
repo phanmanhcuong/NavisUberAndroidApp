@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1011015476472",
+    "firebase_url": "https://navisuberusernotification.firebaseio.com",
+    "project_id": "navisuberusernotification",
+    "storage_bucket": "navisuberusernotification.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011015476472:android:91665df9aea2fc97",
+        "android_client_info": {
+          "package_name": "com.example.admin.navisuber"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011015476472-migvqu5v5o9somcosafhp1g046310rjd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaGQV3oJS38QPQbyuC6_SxScdmG-Dcdxg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

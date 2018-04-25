@@ -11,7 +11,7 @@
     <string name="destination_latlng">DestinationLatlng</string>
     <string name="destination_lat">destinationLat</string>
     <string name="destination_long">destinationLong</string>
-    <string name="google_api_key">AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs</string>
+    <string name="google_api_key_map">AIzaSyCcUm5QfKeS1TchRbIy7mDjhbaZgwfxFOs</string>
     <string name="latlng_bound">LatLngBound</string>
     <string name="latlng_arraylist">LatLngArraylist</string>
     <string name="route_wrapper">RouteWrapper</string>
@@ -54,4 +54,8 @@
     <string name="json_order_time">orderTime</string>
     <string name="json_pickup_time">pickupTime</string>
     <string name="json_phone_number">phoneNumber</string>
+    <string name="refreshed_token">refreshed_token</string>
+    <string name="notification_data">data</string>
+    <string name="notification_title">title</string>
+    <string name="notification_message">message</string>
 </resources>

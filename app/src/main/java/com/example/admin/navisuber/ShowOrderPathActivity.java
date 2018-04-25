@@ -106,11 +106,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         });
 
         final PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
-//        if(placeOrigin != null){
-//            autocompleteOrigin.setText(placeOrigin);
-//        }else{
-//            autocompleteOrigin.setHint(getResources().getString(R.string.origin));
-//        }
         //dùng cho cả 2 fragment
         AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder().setCountry("VN").build();
         autocompleteOrigin.setFilter(autocompleteFilter);
@@ -381,7 +376,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             stringRequest.append("&destination=");
             stringRequest.append(destinationEncode);
             stringRequest.append("&key=");
-            stringRequest.append(getResources().getString(R.string.google_api_key));
+            stringRequest.append(getResources().getString(R.string.google_api_key_map));
             return stringRequest.toString();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

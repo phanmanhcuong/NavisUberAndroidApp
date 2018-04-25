@@ -3,6 +3,7 @@ package com.example.admin.navisuber;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -59,6 +60,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     private static final int WAITING_DIALOG_RETURN = 1;
     private static final int ORIGIN_ON_CLEAR_BUTTON_CLICKED = 1;
     private static final int DESTINATION_ON_CLEAR_BUTTON_CLICKED = 2;
+    private static final String PREFERENCES_NAME = "tokenIdPref" ;
     private static String originPlace;
     private static String destinationPlace;
     private static LatLng destinationLatlng;
@@ -225,6 +227,10 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                                 String currentTimeString = format.format(currentTime);
 
+                                //Get tokenid from sharedPreferences
+                                SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+                                String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
+
                                 HashMap<String, String> carOrder = new HashMap<>();
                                 carOrder.put(getResources().getString(R.string.json_origin), originPlace);
                                 carOrder.put(getResources().getString(R.string.origin_lat), String.valueOf(originLatlng.latitude));
@@ -236,6 +242,10 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 carOrder.put(getResources().getString(R.string.json_order_time), currentTimeString);
                                 carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
+                                if(tokenID != null){
+                                    carOrder.put(getResources().getString(R.string.refreshed_token), tokenID);
+
+                                }
 
                                 PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
                                 postDataToWebService.execute();
