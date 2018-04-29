@@ -3,7 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/et_padding_left"
+    android:paddingRight="@dimen/et_padding_left">
     <fragment
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
@@ -27,28 +29,26 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/tv_padding_left"
         android:paddingBottom="@dimen/tv_padding_left"
+        android:layout_marginTop="@dimen/et_shape_padding"
         android:paddingLeft="@dimen/tv_padding_left"
         android:hint="@string/car_type"/>
 
     <EditText
         android:id="@+id/et_pick_up_time"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/tv_padding_left"
-        android:paddingBottom="@dimen/tv_padding_left"
-        android:paddingLeft="@dimen/tv_padding_left"
+        android:layout_height="@dimen/et_shape_height"
+        android:layout_marginTop="@dimen/et_shape_padding"
         android:hint="@string/pick_up_time"
-        android:inputType="datetime"/>
-
+        android:inputType="datetime"
+        android:background="@drawable/style_edittext"/>
     <EditText
         android:id="@+id/et_phone_contact"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/tv_padding_left"
-        android:paddingBottom="@dimen/tv_padding_left"
-        android:paddingLeft="@dimen/tv_padding_left"
+        android:layout_marginTop="@dimen/et_shape_padding"
+        android:layout_height="@dimen/et_shape_height"
         android:inputType="phone"
-        android:hint="@string/so_dien_thoai"/>
+        android:hint="@string/so_dien_thoai"
+        android:background="@drawable/style_edittext"/>
 
     <LinearLayout
         android:layout_width="wrap_content"

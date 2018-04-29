@@ -5,4 +5,7 @@
     <dimen name="tv_textsize">20sp</dimen>
     <dimen name="btn_padding_right">17dp</dimen>
     <dimen name="ln_margin_bottom">10dp</dimen>
+    <dimen name="edit_text_radius">15dp</dimen>
+    <dimen name="et_shape_height">40dp</dimen>
+    <dimen name="et_shape_padding">15dp</dimen>
 </resources>
