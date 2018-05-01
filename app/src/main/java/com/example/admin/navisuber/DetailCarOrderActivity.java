@@ -11,6 +11,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -244,7 +246,6 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
                                 if(tokenID != null){
                                     carOrder.put(getResources().getString(R.string.refreshed_token), tokenID);
-
                                 }
 
                                 PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
@@ -332,41 +333,11 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         return WAITING_DIALOG_RETURN;
     }
 
-
-//    private String postDataToWebService(String path, JSONObject jsonObject) {
-//        StringBuilder builder = null;
-//        HttpURLConnection connection;
-//        try {
-//            URL url = new URL(path);
-//            connection = (HttpURLConnection)url.openConnection();
-//            connection.setRequestMethod("POST");
-//            connection.setRequestProperty("Content-Type", "application/json");
-//            connection.setRequestProperty("Accept", "application/json");
-//
-//            OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
-//            streamWriter.write(jsonObject.toString());
-//            streamWriter.flush();
-//
-//            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
-//                InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
-//                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//                String line;
-//                while ((line = bufferedReader.readLine()) != null){
-//                    builder.append(line);
-//                }
-//            }
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        if(builder == null){
-//            return null;
-//        } else{
-//            return builder.toString();
-//        }
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar_show_path, menu);
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -405,10 +376,16 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
                 startActivity(intent);
                 break;
+
+            case R.id.btn_order_info:
+//                Intent orderStatusIntent = new Intent(DetailCarOrderActivity.this, OrderStatusActivity.class);
+//                startActivity(orderStatusIntent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    //get car types
     private class InsertDataFromSSMS extends AsyncTask<Void, Void, Void>{
         @Override
         protected Void doInBackground(Void... voids) {
@@ -418,7 +395,6 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             return null;
         }
     }
-
 
     private class PostDataToWebService  extends AsyncTask<Void, Void, String>{
         private HashMap<String, String> carOrder;

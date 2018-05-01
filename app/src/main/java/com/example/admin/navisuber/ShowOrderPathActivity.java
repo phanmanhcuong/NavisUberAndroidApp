@@ -12,11 +12,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,6 +67,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     private static String placeDestination;
     private static LatLng destinationLatlng;
     private static LatLng originLatlng;
+    private static String carType;
+    private static String pickupTime;
     private static RouteWrapper sRouteWrapper;
     private static LatLngBounds sLatLngBounds;
 
@@ -73,6 +76,9 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_order_path);
+
+        ActionBar actionBar = this.getSupportActionBar();
+        actionBar.setDisplayShowHomeEnabled(true);
 
         Intent intent = getIntent();
         final Bundle bundle = intent.getExtras();
@@ -82,6 +88,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
             originLatlng = bundle.getParcelable(getResources().getString(R.string.origin_latlng));
             placeDestination = bundle.getString(getResources().getString(R.string.destination));
             destinationLatlng = bundle.getParcelable(getResources().getString(R.string.destination_latlng));
+            carType = bundle.getString(getResources().getString(R.string.car_type));
+            pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
         }
 
         SupportMapFragment ggMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_ggmap);
@@ -198,19 +206,19 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 }
             });
 
-        ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String carType = null;
-                String pickupTime = null;
-                if(bundle != null){
-                    carType = bundle.getString(getResources().getString(R.string.car_type));
-                    pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
-                }
-                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
-            }
-        });
+//        ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
+//        imageButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String carType = null;
+//                String pickupTime = null;
+//                if(bundle != null){
+//                    carType = bundle.getString(getResources().getString(R.string.car_type));
+//                    pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
+//                }
+//                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
+//            }
+//        });
 
 //        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order, nếu chỉ có 1 trong 2 điểm thì move camera
 //        if(placeOrigin != null && placeDestination != null){
@@ -299,6 +307,26 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar_show_path, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.btn_detail_order:
+                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
+                break;
+
+            case R.id.btn_order_info:
+//                Intent orderStatusIntent = new Intent(ShowOrderPathActivity.this, OrderStatusActivity.class);
+//                startActivity(orderStatusIntent);
+                break;
+        }
+        return true;
+    }
     private void askPermissionsAndShowMyLocation() {
         if(Build.VERSION.SDK_INT >= 23){
             //vị trí tương đối
@@ -310,7 +338,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 String[] permissions = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
                 //Dialog
                 ActivityCompat.requestPermissions(this, permissions, REQUEST_ID_ACCESS_COURSE_FINE_LOCATION);
-                return;
             }
         }
 

@@ -91,13 +91,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         Car car = new Car(jsonArray.get(i).toString());
                         this.addCar(car);
                     }
-
-//                    CarJson gson = new Gson().fromJson(responseCarType, CarJson.class);
-//                    String carTypes[] = gson.getCarType();
-//                    for (String carType : carTypes) {
-//                        Car car = new Car(carType);
-//                        this.addCar(car);
-//                    }
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
