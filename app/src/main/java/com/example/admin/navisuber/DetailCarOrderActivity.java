@@ -62,7 +62,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     private static final int WAITING_DIALOG_RETURN = 1;
     private static final int ORIGIN_ON_CLEAR_BUTTON_CLICKED = 1;
     private static final int DESTINATION_ON_CLEAR_BUTTON_CLICKED = 2;
-    private static final String PREFERENCES_NAME = "tokenIdPref" ;
+    private static final String PREFERENCES_NAME = "tokenIdPref";
     private static String originPlace;
     private static String destinationPlace;
     private static LatLng destinationLatlng;
@@ -95,7 +95,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
             PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
             if (originPlace != null) {
-                EditText et = ((EditText)autocompleteOrigin.getView().findViewById(R.id.place_autocomplete_search_input));
+                EditText et = ((EditText) autocompleteOrigin.getView().findViewById(R.id.place_autocomplete_search_input));
                 et.setHint(originPlace);
                 et.setText(originPlace);
                 //autocompleteOrigin.setText(originPlace);
@@ -165,19 +165,19 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
             cartypeList = db.getListCarType();
 
-            Spinner spinnerCarType = (Spinner)findViewById(R.id.spinner_car_type);
+            Spinner spinnerCarType = (Spinner) findViewById(R.id.spinner_car_type);
             ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this,
                     android.R.layout.simple_spinner_item, cartypeList);
             dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerCarType.setAdapter(dataAdapter);
-            if(carType != null){
+            if (carType != null) {
                 int selectedPosition = dataAdapter.getPosition(carType);
                 spinnerCarType.setSelection(selectedPosition);
             }
 
             //pick up time
-            if(pickupTime != null){
-                EditText etPickupTime = (EditText)findViewById(R.id.et_pick_up_time);
+            if (pickupTime != null) {
+                EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
                 etPickupTime.setText(pickupTime);
             }
 
@@ -186,7 +186,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    Spinner spinnerCartype = (Spinner)findViewById(R.id.spinner_car_type);
+                    Spinner spinnerCartype = (Spinner) findViewById(R.id.spinner_car_type);
                     int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
                     carType = cartypeList.get(selectedItemPosition);
 
@@ -209,11 +209,11 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                             }
                         });
                         builder.show();
-                    } else{
+                    } else {
                         AlertDialog.Builder builderRequest = new AlertDialog.Builder(DetailCarOrderActivity.this);
                         builderRequest.setTitle(getResources().getString(R.string.send_order));
                         builderRequest.setMessage("Điểm đón: " + originPlace + "\nĐiểm đến: " + destinationPlace + "\nLoại xe: "
-                        + carType + "\nThời gian đón: " + pickupTime + "\nSố điện thoại: " + phoneNumber);
+                                + carType + "\nThời gian đón: " + pickupTime + "\nSố điện thoại: " + phoneNumber);
                         builderRequest.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -244,7 +244,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 carOrder.put(getResources().getString(R.string.json_order_time), currentTimeString);
                                 carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
-                                if(tokenID != null){
+                                if (tokenID != null) {
                                     carOrder.put(getResources().getString(R.string.refreshed_token), tokenID);
                                 }
 
@@ -270,9 +270,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+            if (flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED) {
                 originPlace = null;
-            } else{
+            } else {
                 destinationPlace = null;
             }
 
@@ -280,14 +280,14 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Void params){
+        protected void onPostExecute(Void params) {
             super.onPostExecute(params);
 
-            if(flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED){
+            if (flag == ORIGIN_ON_CLEAR_BUTTON_CLICKED) {
                 PlaceAutocompleteFragment autocompleteOrigin = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_origin);
                 autocompleteOrigin.setText("");
                 autocompleteOrigin.setHint(getResources().getString(R.string.origin));
-            } else{
+            } else {
                 PlaceAutocompleteFragment autocompleteDestination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_auto_complete_destination);
                 autocompleteDestination.setText("");
                 autocompleteDestination.setHint(getResources().getString(R.string.destination));
@@ -301,16 +301,16 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         waitingDialog.setContentView(R.layout.waiting_dialog_layout);
         waitingDialog.setCancelable(false);
 
-        final Button btn_resend_order = (Button)waitingDialog.findViewById(R.id.btn_resend_order);
+        final Button btn_resend_order = (Button) waitingDialog.findViewById(R.id.btn_resend_order);
         btn_resend_order.setTextColor(ContextCompat.getColor(DetailCarOrderActivity.this, R.color.colorGrey));
         btn_resend_order.setEnabled(false);
 
-        final TextView tv_dialog_msg = (TextView)waitingDialog.findViewById(R.id.tv_dialog_message);
+        final TextView tv_dialog_msg = (TextView) waitingDialog.findViewById(R.id.tv_dialog_message);
 
         new CountDownTimer(30000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                tv_dialog_msg.setText(getResources().getString(R.string.waiting_dialog_message) + " " + millisUntilFinished/1000 + " giây.");
+                tv_dialog_msg.setText(getResources().getString(R.string.waiting_dialog_message) + " " + millisUntilFinished / 1000 + " giây.");
             }
 
             @Override
@@ -343,50 +343,56 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(DetailCarOrderActivity.this, ShowOrderPathActivity.class);
-
-                if (originPlace != null) {
-                    intent.putExtra(getResources().getString(R.string.origin), originPlace);
-                    intent.putExtra(getResources().getString(R.string.origin_latlng), originLatlng);
-                }
-
-                if (destinationPlace != null) {
-                    intent.putExtra(getResources().getString(R.string.destination), destinationPlace);
-                    intent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
-                }
-
-                Spinner spinnerCartype = (Spinner)findViewById(R.id.spinner_car_type);
-                int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
-                carType = cartypeList.get(selectedItemPosition);
-                if (carType != null) {
-                    intent.putExtra(getResources().getString(R.string.car_type), carType);
-                }
-
-                EditText etPickUpTime = (EditText) findViewById(R.id.et_pick_up_time);
-                pickupTime = etPickUpTime.getText().toString();
-                if (!pickupTime.isEmpty()) {
-                    intent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
-                }
-
-                EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
-                phoneNumber = etPhoneNumber.getText().toString();
-                if (!phoneNumber.isEmpty()) {
-                    intent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
-                }
-
-                startActivity(intent);
+                Intent showPathIntent = new Intent(DetailCarOrderActivity.this, ShowOrderPathActivity.class);
+                //put extra data to intent ShowPath
+                PutDataToIntent(showPathIntent);
+                startActivity(showPathIntent);
                 break;
 
             case R.id.btn_order_info:
-//                Intent orderStatusIntent = new Intent(DetailCarOrderActivity.this, OrderStatusActivity.class);
-//                startActivity(orderStatusIntent);
+                Intent orderStatusIntent = new Intent(DetailCarOrderActivity.this, OrderStatusActivity.class);
+                //put extra data to intent OrderStatus
+                PutDataToIntent(orderStatusIntent);
+                startActivity(orderStatusIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void PutDataToIntent(Intent intent) {
+        if (originPlace != null) {
+            intent.putExtra(getResources().getString(R.string.origin), originPlace);
+            intent.putExtra(getResources().getString(R.string.origin_latlng), originLatlng);
+        }
+
+        if (destinationPlace != null) {
+            intent.putExtra(getResources().getString(R.string.destination), destinationPlace);
+            intent.putExtra(getResources().getString(R.string.destination_latlng), destinationLatlng);
+        }
+
+        Spinner spinnerCartype = (Spinner) findViewById(R.id.spinner_car_type);
+        int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
+        carType = cartypeList.get(selectedItemPosition);
+        if (carType != null) {
+            intent.putExtra(getResources().getString(R.string.car_type), carType);
+        }
+
+        EditText etPickUpTime = (EditText) findViewById(R.id.et_pick_up_time);
+        pickupTime = etPickUpTime.getText().toString();
+        if (!pickupTime.isEmpty()) {
+            intent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
+        }
+
+        EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+        phoneNumber = etPhoneNumber.getText().toString();
+        if (!phoneNumber.isEmpty()) {
+            intent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
+        }
+
+    }
+
     //get car types
-    private class InsertDataFromSSMS extends AsyncTask<Void, Void, Void>{
+    private class InsertDataFromSSMS extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
             DatabaseHelper db = new DatabaseHelper(DetailCarOrderActivity.this);
@@ -396,7 +402,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         }
     }
 
-    private class PostDataToWebService  extends AsyncTask<Void, Void, String>{
+    private class PostDataToWebService extends AsyncTask<Void, Void, String> {
         private HashMap<String, String> carOrder;
 
         public PostDataToWebService(HashMap<String, String> carOrder) {
@@ -409,7 +415,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             HttpURLConnection connection;
             try {
                 URL url = new URL(getResources().getString(R.string.webservice_url));
-                connection = (HttpURLConnection)url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoInput(true);
                 connection.setDoOutput(true);
@@ -424,11 +430,11 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 os.close();
 
                 int responsecode = connection.getResponseCode();
-                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                     String line;
-                    if ((line = bufferedReader.readLine()) != null){
+                    if ((line = bufferedReader.readLine()) != null) {
                         builder.append(line);
                     }
                 }
@@ -439,15 +445,15 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             }
 
             //response
-            if(builder == null){
+            if (builder == null) {
                 return null;
-            } else{
+            } else {
                 return builder.toString();
             }
         }
 
         @Override
-        protected void onPostExecute(String response){
+        protected void onPostExecute(String response) {
             AlertDialog.Builder responseBuilder = new AlertDialog.Builder(DetailCarOrderActivity.this);
             responseBuilder.setTitle(getResources().getString(R.string.webservice_response));
             responseBuilder.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
@@ -457,9 +463,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
 
-            if(response.contains(getResources().getString(R.string.success_response))){
+            if (response.contains(getResources().getString(R.string.success_response))) {
                 responseBuilder.setMessage(getResources().getString(R.string.webservice_response_success));
-            } else{
+            } else {
                 responseBuilder.setMessage(getResources().getString(R.string.webservice_response_fail));
             }
             responseBuilder.show();

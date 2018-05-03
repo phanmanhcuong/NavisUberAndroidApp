@@ -1,17 +1,15 @@
 package com.example.admin.navisuber;
 
-import java.util.Date;
-
 public class Order {
     private int orderID;
     private String originPlace;
     private String destinationPlace;
-    private Date pickupTime;
-    private Date orderedTime;
+    private String pickupTime;
+    private String orderedTime;
     private String carType;
     private int seatNumber;
 
-    public Order(int orderID, String originPlace, String destinationPlace, Date pickupTime, Date orderedTime, int seatNumber) {
+    public Order(int orderID, String originPlace, String destinationPlace, String pickupTime, String orderedTime, int seatNumber) {
         this.orderID = orderID;
         this.originPlace = originPlace;
         this.destinationPlace = destinationPlace;
@@ -32,11 +30,11 @@ public class Order {
         return destinationPlace;
     }
 
-    public Date getPickupTime() {
+    public String getPickupTime() {
         return pickupTime;
     }
 
-    public Date getOrderedTime() {
+    public String getOrderedTime() {
         return orderedTime;
     }
 }

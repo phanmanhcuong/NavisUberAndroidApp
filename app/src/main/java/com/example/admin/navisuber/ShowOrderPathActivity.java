@@ -206,20 +206,6 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 }
             });
 
-//        ImageButton imageButton = (ImageButton)findViewById(R.id.btn_detail_order);
-//        imageButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String carType = null;
-//                String pickupTime = null;
-//                if(bundle != null){
-//                    carType = bundle.getString(getResources().getString(R.string.car_type));
-//                    pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
-//                }
-//                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
-//            }
-//        });
-
 //        //show path nếu đã điền đủ điểm đón và điểm đến ở màn hình detail order, nếu chỉ có 1 trong 2 điểm thì move camera
 //        if(placeOrigin != null && placeDestination != null){
 //            autocompleteOrigin.setText(placeOrigin);
@@ -321,8 +307,8 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 break;
 
             case R.id.btn_order_info:
-//                Intent orderStatusIntent = new Intent(ShowOrderPathActivity.this, OrderStatusActivity.class);
-//                startActivity(orderStatusIntent);
+                Intent orderStatusIntent = new Intent(ShowOrderPathActivity.this, OrderStatusActivity.class);
+                startActivity(orderStatusIntent);
                 break;
         }
         return true;
