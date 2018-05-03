@@ -12,31 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/fragment_auto_complete_destination"/>
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/tv_distance_duration"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/ln_bottom_menu"
-        android:layout_marginBottom="@dimen/ln_margin_bottom">
-        <TextView
-            android:id="@+id/tv_distance_duration"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/detail_order"
-            android:paddingLeft="@dimen/tv_padding_left"
-            android:textSize="@dimen/tv_textsize"/>
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-        <ImageButton
-            android:id="@+id/btn_detail_order"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_add_24px"
-            android:background="@android:color/transparent"
-            android:paddingRight="@dimen/btn_padding_right"/>
-    </LinearLayout>
+        android:text="@string/distance_duration"
+        android:paddingLeft="@dimen/tv_padding_left"
+        android:textSize="@dimen/tv_textsize"/>
 
     <fragment
         android:name="com.google.android.gms.maps.SupportMapFragment"

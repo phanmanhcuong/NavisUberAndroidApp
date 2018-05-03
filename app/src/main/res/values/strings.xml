@@ -18,7 +18,6 @@
     <string name="car_type">Loại xe</string>
     <string name="pick_up_time">Thời gian đón (ngày/tháng/năm giờ:phút)</string>
     <string name="so_dien_thoai">Số điện thoại liên lạc</string>
-    <string name="expected_money">Số tiền dự kiến</string>
     <string name="submit_car_order">Xác nhận đặt xe</string>
     <string name="duration">Duration</string>
     <string name="distance">Distance</string>
@@ -40,9 +39,9 @@
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
     <string name="webservice_response_fail">Yêu cầu xe thất bại !</string>
-    <string name="database_name">TrackingManagement</string>
-    <string name="server_name">navistardev.cloudapp.net:1433</string>
-    <string name="username">trackingadmin</string>
+    <string name="server_name">navistargsht.cloudapp.net:1434</string>
+    <string name="database_name">NavisUberPMCuong</string>
+    <string name="username">sa</string>
     <string name="password">Navis123</string>
     <string name="waiting_dialog_message">Chờ xử lí yêu cầu trong: </string>
     <string name="resend_order">Gửi lại yêu cầu</string>
@@ -58,4 +57,9 @@
     <string name="notification_data">data</string>
     <string name="notification_title">title</string>
     <string name="notification_message">message</string>
+    <string name="order_information">Thông tin đặt xe</string>
+    <string name="waiting_for_handle">Đợi gán xe</string>
+    <string name="waiting_for_car">Đợi xe</string>
+    <string name="history">Lịch sử</string>
+    <string name="distance_duration">Khoảng cách - thời gian</string>
 </resources>

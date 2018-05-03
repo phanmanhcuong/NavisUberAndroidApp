@@ -7,4 +7,5 @@
     <color name="colorRed">#FF0000</color>
     <color name="colorTransparent">#80000000</color>
     <color name="colorGrey">#808080</color>
+    <color name="colorTabLayout">#A9D0F5</color>
 </resources>
