@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:text="@string/Name"
+            android:gravity="center_horizontal"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:background="@drawable/style_edittext"
+            android:id="@+id/tv_name"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:text="@string/PhoneNumber"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="@dimen/et_shape_padding"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:background="@drawable/style_edittext"
+            android:id="@+id/tv_phone_number"
+            android:inputType="phone"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:text="@string/Email"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="@dimen/et_shape_padding"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/et_shape_height"
+            android:background="@drawable/style_edittext"
+            android:id="@+id/tv_email"
+            android:inputType="textEmailAddress"
+            android:hint="@string/email_hint"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/et_shape_padding"
+            android:text="@string/submit_signup"
+            android:layout_gravity="center_horizontal"
+            android:onClick="SendSignUp"/>
+    </LinearLayout>
+
+</LinearLayout>

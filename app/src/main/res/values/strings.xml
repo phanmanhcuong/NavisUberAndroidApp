@@ -34,13 +34,16 @@
     <string name="latlng_point_arraylist">LatLngPointArrayList</string>
     <string name="send_order">Gửi yêu cầu</string>
     <string name="order">carOrder</string>
-    <string name="webservice_url">http://192.168.0.108:62518/Service1.svc/CarOrderRequestReceiver</string>
-    <string name="webservice_get_car_type_url">http://192.168.0.108:62518/Service1.svc/GetCarType</string>
+    <string name="webservice_signup">http://navistargsht.cloudapp.net:6004/Service1.svc/UserSignUp</string>
+    <string name="webservice_url">http://navistargsht.cloudapp.net:6004/Service1.svc/CarOrderRequestReceiver</string>
+    <string name="webservice_get_car_type_url">http://navistargsht.cloudapp.net:6004/Service1.svc/GetCarType</string>
+    <string name="webservice_get_car_location">http://192.168.0.100:62518/Service1.svc/GetCarLocation?carId=</string>
+    <string name="webservice_get_waiting_orders">http://192.168.0.100:62518/Service1.svc/GetOrders?sdt_nguoi_dat=</string>
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
     <string name="webservice_response_fail">Yêu cầu xe thất bại !</string>
     <string name="server_name">navistargsht.cloudapp.net:1434</string>
-    <string name="database_name">NavisUberPMCuong</string>
+    <string name="database_name">NavisUber</string>
     <string name="username">sa</string>
     <string name="password">Navis123</string>
     <string name="waiting_dialog_message">Chờ xử lí yêu cầu trong: </string>
@@ -62,4 +65,18 @@
     <string name="waiting_for_car">Đợi xe</string>
     <string name="history">Lịch sử</string>
     <string name="distance_duration">Khoảng cách - thời gian</string>
+    <string name="Name">Họ và tên</string>
+    <string name="Email">email</string>
+    <string name="PhoneNumber">Số điện thoại</string>
+    <string name="submit_signup">Gửi đăng kí</string>
+    <string name="email_hint">abc@gmail.com</string>
+    <string name="signup_phonenumber">PhoneNumber</string>
+    <string name="signup_name">Name</string>
+    <string name="signup_email">Email</string>
+    <string name="signup_tokenid">TokenId</string>
+    <string name="signup_response">Thông báo đăng kí</string>
+    <string name="signup_success">Đăng kí thành công !</string>
+    <string name="signup_fail">Đăng kí thất bại !</string>
+    <string name="car_location">Vị trí của xe</string>
+    <string name="fragment_title">Vị trí xe</string>
 </resources>
