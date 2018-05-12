@@ -48,9 +48,6 @@ public class AdapterHandling extends BaseAdapter {
         TextView tv_path = view.findViewById(R.id.tv_path);
         tv_path.setText("- Tuyến đường: " + currentOrder.getOriginPlace() + " - " + currentOrder.getDestinationPlace() + ".");
 
-        TextView tv_seatNumber = view.findViewById(R.id.tv_seatNumber);
-        tv_seatNumber.setText("- Số ghế: " + currentOrder.getSeatNumber());
-
         TextView tv_pickupTime = view.findViewById(R.id.tv_pickup_time);
         tv_pickupTime.setText("- Thời điểm khởi hành: " + currentOrder.getPickupTime());
 

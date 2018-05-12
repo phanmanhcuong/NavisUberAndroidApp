@@ -47,6 +47,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
     private static final int ORIGIN_ON_CLEAR_BUTTON_CLICKED = 1;
     private static final int DESTINATION_ON_CLEAR_BUTTON_CLICKED = 2;
     private static final String PREFERENCES_NAME = "tokenIdPref";
+    private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
     private static String originPlace;
     private static String destinationPlace;
     private static LatLng destinationLatlng;
@@ -87,7 +89,7 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             originLatlng = bundle.getParcelable(getResources().getString(R.string.origin_latlng));
             destinationPlace = bundle.getString(getResources().getString(R.string.destination));
             destinationLatlng = bundle.getParcelable(getResources().getString(R.string.destination_latlng));
-            phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
+            //phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
             carType = bundle.getString(getResources().getString(R.string.car_type));
             pickupTime = bundle.getString(getResources().getString(R.string.pick_up_time));
 
@@ -155,24 +157,28 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                 }
             });
 
-            EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
-            etPhoneNumber.setText(phoneNumber);
+//            EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+//            etPhoneNumber.setText(phoneNumber);
 
             //cartype dropdown list
             DatabaseHelper db = new DatabaseHelper(this);
-            InsertDataFromSSMS insertDataFromSSMS = new InsertDataFromSSMS();
-            insertDataFromSSMS.execute();
+            //InsertDataFromSSMS insertDataFromSSMS = new InsertDataFromSSMS();
+            //insertDataFromSSMS.execute();
 
             cartypeList = db.getListCarType();
-
-            Spinner spinnerCarType = (Spinner) findViewById(R.id.spinner_car_type);
-            ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_spinner_item, cartypeList);
-            dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerCarType.setAdapter(dataAdapter);
-            if (carType != null) {
-                int selectedPosition = dataAdapter.getPosition(carType);
-                spinnerCarType.setSelection(selectedPosition);
+            if (cartypeList.size() == 0) {
+                InsertDataFromSSMS insertDataFromSSMS = new InsertDataFromSSMS();
+                insertDataFromSSMS.execute();
+            } else {
+                Spinner spinnerCarType = (Spinner) findViewById(R.id.spinner_car_type);
+                ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_item, cartypeList);
+                dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCarType.setAdapter(dataAdapter);
+                if (carType != null) {
+                    int selectedPosition = dataAdapter.getPosition(carType);
+                    spinnerCarType.setSelection(selectedPosition);
+                }
             }
 
             //pick up time
@@ -194,11 +200,12 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                     EditText etPickupTime = (EditText) findViewById(R.id.et_pick_up_time);
                     pickupTime = etPickupTime.getText().toString();
 
-                    EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
-                    phoneNumber = etPhoneNumber.getText().toString();
+//                    EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+//                    phoneNumber = etPhoneNumber.getText().toString();
+                    SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
+                    phoneNumber = sharedPreferences.getString(getResources().getString(R.string.phone_number), null);
 
-                    if (originPlace == null || destinationPlace == null || phoneNumber.isEmpty() || carType == null
-                            || pickupTime.isEmpty()) {
+                    if (originPlace == null || destinationPlace == null || carType == null || pickupTime.isEmpty()) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(DetailCarOrderActivity.this);
                         builder.setTitle(getResources().getString(R.string.warning_dialog));
                         builder.setMessage(getResources().getString(R.string.waring_message));
@@ -230,8 +237,8 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 String currentTimeString = format.format(currentTime);
 
                                 //Get tokenid from sharedPreferences
-                                SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
-                                String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
+                                //SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+                                //String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
 
                                 HashMap<String, String> carOrder = new HashMap<>();
                                 carOrder.put(getResources().getString(R.string.json_origin), originPlace);
@@ -244,9 +251,9 @@ public class DetailCarOrderActivity extends AppCompatActivity {
                                 carOrder.put(getResources().getString(R.string.json_order_time), currentTimeString);
                                 carOrder.put(getResources().getString(R.string.json_pickup_time), pickupTime);
                                 carOrder.put(getResources().getString(R.string.json_phone_number), phoneNumber);
-                                if (tokenID != null) {
-                                    carOrder.put(getResources().getString(R.string.refreshed_token), tokenID);
-                                }
+//                                if (tokenID != null) {
+//                                    carOrder.put(getResources().getString(R.string.refreshed_token), tokenID);
+//                                }
 
                                 PostDataToWebService postDataToWebService = new PostDataToWebService(carOrder);
                                 postDataToWebService.execute();
@@ -371,10 +378,13 @@ public class DetailCarOrderActivity extends AppCompatActivity {
         }
 
         Spinner spinnerCartype = (Spinner) findViewById(R.id.spinner_car_type);
-        int selectedItemPosition = spinnerCartype.getSelectedItemPosition();
-        carType = cartypeList.get(selectedItemPosition);
-        if (carType != null) {
-            intent.putExtra(getResources().getString(R.string.car_type), carType);
+        int selectedItemPosition = -1;
+        selectedItemPosition = spinnerCartype.getSelectedItemPosition();
+        if(selectedItemPosition != -1){
+            carType = cartypeList.get(selectedItemPosition);
+            if (carType != null) {
+                intent.putExtra(getResources().getString(R.string.car_type), carType);
+            }
         }
 
         EditText etPickUpTime = (EditText) findViewById(R.id.et_pick_up_time);
@@ -383,23 +393,38 @@ public class DetailCarOrderActivity extends AppCompatActivity {
             intent.putExtra(getResources().getString(R.string.pick_up_time), pickupTime);
         }
 
-        EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
-        phoneNumber = etPhoneNumber.getText().toString();
-        if (!phoneNumber.isEmpty()) {
-            intent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
-        }
+//        EditText etPhoneNumber = (EditText) findViewById(R.id.et_phone_contact);
+//        phoneNumber = etPhoneNumber.getText().toString();
+//        if (!phoneNumber.isEmpty()) {
+//            intent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
+//        }
 
     }
 
     //get car types
-    private class InsertDataFromSSMS extends AsyncTask<Void, Void, Void> {
+    private class InsertDataFromSSMS extends AsyncTask<Void, Void, List<String>> {
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected List<String> doInBackground(Void... voids) {
             DatabaseHelper db = new DatabaseHelper(DetailCarOrderActivity.this);
+            //db.deleteAll();
             db.insertDataFromSSMS();
-
-            return null;
+            return db.getListCarType();
         }
+
+        @Override
+        protected void onPostExecute(List<String> carTypeList) {
+            Spinner spinnerCarType = findViewById(R.id.spinner_car_type);
+            ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(DetailCarOrderActivity.this,
+                    android.R.layout.simple_spinner_item, cartypeList);
+            dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerCarType.setAdapter(dataAdapter);
+            if (carType != null) {
+                int selectedPosition = dataAdapter.getPosition(carType);
+                spinnerCarType.setSelection(selectedPosition);
+            }
+        }
+
+
     }
 
     private class PostDataToWebService extends AsyncTask<Void, Void, String> {

@@ -83,7 +83,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         Intent intent = getIntent();
         final Bundle bundle = intent.getExtras();
         if(bundle != null){
-            phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
+            //phoneNumber = bundle.getString(getResources().getString(R.string.phone_number));
             placeOrigin = bundle.getString(getResources().getString(R.string.origin));
             originLatlng = bundle.getParcelable(getResources().getString(R.string.origin_latlng));
             placeDestination = bundle.getString(getResources().getString(R.string.destination));
@@ -105,8 +105,14 @@ public class ShowOrderPathActivity extends AppCompatActivity {
                 googleMap.setMyLocationEnabled(true);
 
                 //set camera to Ha Noi
-                LatLngBounds HNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(HNBound, 5));
+                googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                    @Override
+                    public void onMapLoaded() {
+                        LatLngBounds HNBound = new LatLngBounds(new LatLng(20.9950991, 105.7974815), new LatLng(21.0503801, 105.8764459));
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(HNBound, 5));
+                    }
+                });
+
 
                 //set camera to origin or destination or show path if exist
                 SetCamera();
@@ -303,7 +309,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.btn_detail_order:
-                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime, phoneNumber);
+                DetailCarOrder(placeOrigin, originLatlng, placeDestination, destinationLatlng, carType, pickupTime);
                 break;
 
             case R.id.btn_order_info:
@@ -583,9 +589,9 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 //    }
 
     //chuyển data sang qua intent sang màn hình detail car order
-    private void DetailCarOrder(final String placeOrigin, final LatLng originLatlng, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime, String phoneNumber) {
+    private void DetailCarOrder(final String placeOrigin, final LatLng originLatlng, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime) {
         final Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
-        detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
+        //detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);
 
         //nếu chưa nhập điểm đón hoặc điểm đón thì confirm xem có muốn chuyển màn hình ko
         if(placeOrigin == null || placeDestination == null){

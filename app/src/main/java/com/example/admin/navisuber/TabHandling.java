@@ -1,5 +1,6 @@
 package com.example.admin.navisuber;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -11,21 +12,36 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class TabHandling extends Fragment {
     private static final String PREFERENCES_NAME = "tokenIdPref" ;
+    private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
     private static ListView listView;
     private static AdapterHandling adapterHandling;
     private static ArrayList<Order> orderList;
@@ -38,16 +54,12 @@ public class TabHandling extends Fragment {
         adapterHandling = new AdapterHandling(this.getActivity());
 
         listView.setAdapter(adapterHandling);
-        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
         });
 
 
@@ -109,58 +121,62 @@ public class TabHandling extends Fragment {
 
         @Override
         protected ArrayList<Order> doInBackground(Void... voids) {
-            SharedPreferences sharedPreferences = activity.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
-            String tokenID = sharedPreferences.getString(activity.getResources().getString(R.string.refreshed_token), null);
 
             orderList = new ArrayList<>();
 
-            Date currentTime = Calendar.getInstance().getTime();
+            SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
+            String phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
 
+            StringBuilder builder = new StringBuilder();
+            HttpURLConnection connection;
+
+            String webserviceUrl = this.activity.getResources().getString(R.string.webservice_get_waiting_orders) + phoneNumber + "&status=0";
+            URL url;
             try {
-                Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
+                url = new URL(webserviceUrl);
+                connection = (HttpURLConnection) url.openConnection();
 
-                String servername = activity.getResources().getString(R.string.server_name);
-                String dbname = activity.getResources().getString(R.string.database_name);
-                String username = activity.getResources().getString(R.string.username);
-                String password = activity.getResources().getString(R.string.password);
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        builder.append(line);
+                    }
 
-                Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + servername + ";databaseName=" + dbname + ";user=" + username
-                        + ";password=" + password);
+                    String responseWaitingOrders = builder.toString();
 
-                Statement stmt = DbConn.createStatement();
-                ResultSet resultSet = stmt.executeQuery("SELECT id_dat_xe, diem_bat_dau, diem_ket_thuc, thoi_diem_dat_xe," +
-                        " thoi_diem_khoi_hanh, so_ghe FROM dbo.Lst_DatXe WHERE registrationID = '" + tokenID + "' AND status = 0 AND thoi_diem_khoi_hanh >= CURRENT_TIMESTAMP");
-                while (resultSet.next()) {
-                    int orderID = resultSet.getInt("id_dat_xe");
-                    String originPlace = resultSet.getString("diem_bat_dau");
-                    String destinationPlace = resultSet.getString("diem_ket_thuc");
+                    JSONObject jsonResponse = new JSONObject(responseWaitingOrders);
+                    JSONArray jsonArray = jsonResponse.getJSONArray("GetOrdersResult");
 
-                    SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
+                    for (int i = 0; i <jsonArray.length(); i++){
+                        JSONObject order = jsonArray.getJSONObject(i);
 
-                    Timestamp timestampOrder = resultSet.getTimestamp("thoi_diem_dat_xe");
-                    Date orderedTime = new java.util.Date(timestampOrder.getTime());
-                    String orderedString = format.format(orderedTime);
+                        int orderID = order.getInt("id_dat_xe");
+                        int carID = order.getInt("id_xe");
+                        String originPlace = order.getString("diem_bat_dau");
+                        String destinationPlace = order.getString("diem_ket_thuc");
+                        String orderedString = order.getString("thoi_diem_dat_xe");
+                        String pickupString = order.getString("thoi_diem_khoi_hanh");
 
-                    Timestamp timestampPickup = resultSet.getTimestamp("thoi_diem_khoi_hanh");
-                    Date pickupTime = new java.util.Date(timestampPickup.getTime());
-                    String pickupString = format.format(pickupTime);
+                        Order waitingOrder = new Order(orderID, carID, originPlace.trim(), destinationPlace.trim(), pickupString, orderedString);
+                        orderList.add(waitingOrder);
+                    }
 
-                    int seatNumber = resultSet.getInt("so_ghe");
-
-                    Order order = new Order(orderID, originPlace.trim(), destinationPlace.trim(), pickupString, orderedString, seatNumber);
-                    orderList.add(order);
                 }
 
-                DbConn.close();
-
-            } catch (Exception e) {
-                Log.e("error", e.toString());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
             return orderList;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Order> orderList){
+        protected void onPostExecute(ArrayList<Order> orderList) {
             adapterHandling.addList(orderList);
             adapterHandling.notifyDataSetChanged();
         }
