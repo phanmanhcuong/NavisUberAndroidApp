@@ -37,8 +37,9 @@
     <string name="webservice_signup">http://navistargsht.cloudapp.net:6004/Service1.svc/UserSignUp</string>
     <string name="webservice_url">http://navistargsht.cloudapp.net:6004/Service1.svc/CarOrderRequestReceiver</string>
     <string name="webservice_get_car_type_url">http://navistargsht.cloudapp.net:6004/Service1.svc/GetCarType</string>
-    <string name="webservice_get_car_location">http://192.168.0.100:62518/Service1.svc/GetCarLocation?carId=</string>
-    <string name="webservice_get_waiting_orders">http://192.168.0.100:62518/Service1.svc/GetOrders?sdt_nguoi_dat=</string>
+    <string name="webservice_get_car_location">http://navistargsht.cloudapp.net:6004/Service1.svc/GetCarLocation?carId=</string>
+    <string name="webservice_get_waiting_orders">http://navistargsht.cloudapp.net:6004/Service1.svc/GetOrders?sdt_nguoi_dat=</string>
+    <string name="webservice_cancel_order">http://navistargsht.cloudapp.net:6004/Service1.svc/CancelOrder</string>
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
     <string name="webservice_response_fail">Yêu cầu xe thất bại !</string>
@@ -79,4 +80,11 @@
     <string name="signup_fail">Đăng kí thất bại !</string>
     <string name="car_location">Vị trí của xe</string>
     <string name="fragment_title">Vị trí xe</string>
+    <string name="cancel_order">Xác nhận hủy chuyến</string>
+    <string name="cancel_response">Thông báo hủy chuyến</string>
+    <string name="cancel_success">Yêu cầu hủy chuyến thành công, chờ xử lí của admin</string>
+    <string name="cancel_fail">Yêu cầu hủy chuyến thất bại</string>
+    <string name="btn_date">Ngày khởi hành</string>
+    <string name="btn_time">Giờ khởi hành</string>
+    <string name="edit_user">Sửa thông tin cá nhân</string>
 </resources>

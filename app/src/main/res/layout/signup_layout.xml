@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/background_image">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,20 +23,22 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/et_shape_height"
             android:background="@drawable/style_edittext"
-            android:id="@+id/tv_name"/>
+            android:id="@+id/tv_name"
+            android:layout_marginLeft="@dimen/et_padding_left"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="@dimen/et_shape_height"
             android:text="@string/PhoneNumber"
             android:gravity="center_horizontal"
-            android:layout_marginTop="@dimen/et_shape_padding"/>
+            android:layout_marginTop="@dimen/et_shape_padding" />
         <EditText
             android:layout_width="match_parent"
             android:layout_height="@dimen/et_shape_height"
             android:background="@drawable/style_edittext"
             android:id="@+id/tv_phone_number"
-            android:inputType="phone"/>
+            android:inputType="phone"
+            android:layout_marginLeft="@dimen/et_padding_left"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -49,7 +52,8 @@
             android:background="@drawable/style_edittext"
             android:id="@+id/tv_email"
             android:inputType="textEmailAddress"
-            android:hint="@string/email_hint"/>
+            android:hint="@string/email_hint"
+            android:layout_marginLeft="@dimen/et_padding_left"/>
 
         <Button
             android:layout_width="wrap_content"
@@ -57,6 +61,7 @@
             android:layout_marginTop="@dimen/et_shape_padding"
             android:text="@string/submit_signup"
             android:layout_gravity="center_horizontal"
+            android:background="@color/colorTabLayout"
             android:onClick="SendSignUp"/>
     </LinearLayout>
 

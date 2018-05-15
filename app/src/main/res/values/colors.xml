@@ -8,4 +8,11 @@
     <color name="colorTransparent">#80000000</color>
     <color name="colorGrey">#808080</color>
     <color name="colorTabLayout">#A9D0F5</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="color_tabhandling">#A5DF00</color>
+    <color name="color_tabwaiting">#01DF74</color>
+    <color name="color_tabhistory">#DF7401</color>
+    <color name="color_tv_background">#FA8258</color>
+    <color name="color_et_background">#5076C2</color>
+
 </resources>

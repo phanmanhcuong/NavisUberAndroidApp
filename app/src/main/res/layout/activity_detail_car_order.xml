@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingLeft="@dimen/et_padding_left"
-    android:paddingRight="@dimen/et_padding_left">
+    android:paddingRight="@dimen/et_padding_left"
+    android:background="@drawable/background_image">
     <fragment
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="match_parent"
@@ -27,28 +28,74 @@
         android:id="@+id/spinner_car_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/spinner_style"
         android:paddingTop="@dimen/tv_padding_left"
         android:paddingBottom="@dimen/tv_padding_left"
         android:layout_marginTop="@dimen/et_shape_padding"
-        android:paddingLeft="@dimen/tv_padding_left"
+        android:layout_marginLeft="@dimen/et_padding_left"
         android:hint="@string/car_type"/>
 
-    <EditText
-        android:id="@+id/et_pick_up_time"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/et_shape_height"
-        android:layout_marginTop="@dimen/et_shape_padding"
-        android:hint="@string/pick_up_time"
-        android:inputType="datetime"
-        android:background="@drawable/style_edittext"/>
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/et_padding_left"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/et_shape_padding">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/btn_date"
+                android:id="@+id/btn_date"
+                android:background="@color/colorTabLayout"
+                android:layout_weight="1"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/style_textview"
+                android:textSize="20dp"
+                android:layout_marginLeft="@dimen/et_padding_left"
+                android:paddingTop="@dimen/ln_margin_bottom"
+                android:id="@+id/tv_date"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_time"
+                android:text="@string/btn_time"
+                android:background="@color/colorTabLayout"
+                android:layout_weight="1"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/tv_time"
+                android:textSize="20dp"
+                android:layout_marginLeft="@dimen/et_padding_left"
+                android:paddingTop="@dimen/ln_margin_bottom"
+                android:background="@drawable/style_textview"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+    </LinearLayout>
     <EditText
         android:id="@+id/et_phone_contact"
         android:layout_width="match_parent"
         android:layout_marginTop="@dimen/et_shape_padding"
         android:layout_height="@dimen/et_shape_height"
-        android:inputType="phone"
-        android:hint="@string/so_dien_thoai"
+        android:enabled="false"
+        android:textColor="@color/colorTransparent"
+        android:layout_marginLeft="@dimen/et_padding_left"
+        android:paddingTop="@dimen/et_padding_left"
         android:background="@drawable/style_edittext"/>
+
+
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -60,6 +107,9 @@
             android:id="@+id/btn_car_order_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/colorTabLayout"
+            android:paddingLeft="@dimen/et_padding_left"
+            android:paddingRight="@dimen/et_padding_left"
             android:text="@string/submit_car_order"/>
 
     </LinearLayout>
