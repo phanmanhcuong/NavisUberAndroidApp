@@ -314,8 +314,29 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 
             case R.id.btn_order_info:
                 Intent orderStatusIntent = new Intent(ShowOrderPathActivity.this, OrderStatusActivity.class);
+                if(placeOrigin != null){
+                    orderStatusIntent.putExtra(getString(R.string.origin), placeOrigin);
+                    orderStatusIntent.putExtra(getString(R.string.origin_latlng), originLatlng);
+                }
+
+                if(placeDestination != null){
+                    orderStatusIntent.putExtra(getString(R.string.destination), placeDestination);
+                    orderStatusIntent.putExtra(getString(R.string.destination_latlng), destinationLatlng);
+                }
+
+                if(carType != null){
+                    orderStatusIntent.putExtra(getString(R.string.car_type), carType);
+                }
+
+                if(pickupTime != null){
+                    orderStatusIntent.putExtra(getString(R.string.pick_up_time), pickupTime);
+                }
                 startActivity(orderStatusIntent);
                 break;
+
+            case R.id.btn_edit_user:
+                Intent editUserIntent = new Intent(ShowOrderPathActivity.this, SignUpActivity.class);
+                startActivity(editUserIntent);
         }
         return true;
     }
@@ -588,7 +609,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
 //        }
 //    }
 
-    //chuyển data sang qua intent sang màn hình detail car order
+    //chuyển data qua intent sang màn hình detail car order
     private void DetailCarOrder(final String placeOrigin, final LatLng originLatlng, final String placeDestination, final LatLng destinationLatlng, final String carType, final String pickupTime) {
         final Intent detailCarOrderIntent = new Intent(ShowOrderPathActivity.this, DetailCarOrderActivity.class);
         //detailCarOrderIntent.putExtra(getResources().getString(R.string.phone_number), phoneNumber);

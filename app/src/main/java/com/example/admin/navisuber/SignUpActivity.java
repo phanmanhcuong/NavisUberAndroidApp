@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -33,6 +34,25 @@ public class SignUpActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_layout);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
+        //reload user's infor to edittext
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+        String name = sharedPreferences.getString(getString(R.string.Name), null);
+        String phonenumber = sharedPreferences.getString(getString(R.string.PhoneNumber), null);
+        String email = sharedPreferences.getString(getString(R.string.Email), null);
+        if(name != null && phonenumber != null && email != null){
+            TextView tv_name = findViewById(R.id.tv_name);
+            tv_name.setText(name);
+
+            TextView tv_phone_number = findViewById(R.id.tv_phone_number);
+            tv_phone_number.setText(phonenumber);
+
+            TextView tv_email = findViewById(R.id.tv_email);
+            tv_email.setText(email);
+        }
     }
 
     public void SendSignUp(View v){
@@ -48,9 +68,13 @@ public class SignUpActivity extends AppCompatActivity{
         SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
         String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
 
-        if(name != null && phoneNumber != null && email!= null){
-            //SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
-            //String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
+        if(name != "" && phoneNumber != "" && email!= ""){
+            //save to reload when edit user information
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(getResources().getString(R.string.Name), name);
+            editor.putString(getString(R.string.PhoneNumber), phoneNumber);
+            editor.putString(getString(R.string.Email), email);
+            editor.commit();
 
             HashMap<String, String> signupInfo = new HashMap<>();
             signupInfo.put(getResources().getString(R.string.signup_name), name);
@@ -59,6 +83,16 @@ public class SignUpActivity extends AppCompatActivity{
             signupInfo.put(getResources().getString(R.string.signup_tokenid), tokenID);
             SignUpToWebService signUpToWebService = new SignUpToWebService(signupInfo);
             signUpToWebService.execute();
+        } else{
+            AlertDialog.Builder warningDialog = new AlertDialog.Builder(SignUpActivity.this);
+            warningDialog.setTitle(getResources().getString(R.string.warning_dialog));
+            warningDialog.setMessage(getString(R.string.waring_message));
+            warningDialog.setNeutralButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
         }
     }
 
@@ -89,7 +123,6 @@ public class SignUpActivity extends AppCompatActivity{
                 streamWriter.close();
                 os.close();
 
-                int responsecode = connection.getResponseCode();
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);

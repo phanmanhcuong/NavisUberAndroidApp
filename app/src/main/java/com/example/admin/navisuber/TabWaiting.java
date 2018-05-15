@@ -1,33 +1,15 @@
 package com.example.admin.navisuber;
 
-import android.app.Dialog;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,27 +21,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class TabWaiting extends Fragment {
-    private static final String PREFERENCES_NAME = "tokenIdPref";
     private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
+    private static String phoneNumber;
     private static ListView listView;
     private static AdapterHandling adapterWaiting;
-    private static GoogleMap googleMap;
-    private static Marker carMarker;
     private static ArrayList<Order> orderList;
 
     @Override
@@ -77,10 +47,11 @@ public class TabWaiting extends Fragment {
                 //get selected item
                 Order selectedOrder = orderList.get(position);
                 int currentCarId = selectedOrder.getCarID();
+                int orderId = selectedOrder.getOrderID();
 
                 //dialog fragment for google map
                 android.support.v4.app.FragmentManager fm = getActivity().getSupportFragmentManager();
-                FragmentShowMap fragmentShowMap = FragmentShowMap.newInstance(currentCarId, selectedOrder.getPickupTime());
+                FragmentShowMap fragmentShowMap = FragmentShowMap.newInstance(currentCarId, orderId, selectedOrder.getPickupTime());
                 fragmentShowMap.show(fm, "map fragment");
             }
         });
@@ -89,10 +60,13 @@ public class TabWaiting extends Fragment {
         ConnectToDb connectToDb = new ConnectToDb(this.getActivity());
         connectToDb.execute();
 
+        SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
+        phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
+
         return tabView;
     }
 
-    private class ConnectToDb extends AsyncTask<Void, Void, ArrayList<Order>> {
+    public static class ConnectToDb extends AsyncTask<Void, Void, ArrayList<Order>> {
         private Context activity;
 
         public ConnectToDb(Context context) {
@@ -101,11 +75,7 @@ public class TabWaiting extends Fragment {
 
         @Override
         protected ArrayList<Order> doInBackground(Void... voids) {
-
             orderList = new ArrayList<>();
-
-            SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
-            String phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
 
             StringBuilder builder = new StringBuilder();
             HttpURLConnection connection;

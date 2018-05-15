@@ -1,55 +1,53 @@
 package com.example.admin.navisuber;
 
-import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class TabHandling extends Fragment {
-    private static final String PREFERENCES_NAME = "tokenIdPref" ;
     private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
     private static ListView listView;
     private static AdapterHandling adapterHandling;
     private static ArrayList<Order> orderList;
+    private static String phoneNumber;
+
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.tab_handling, container, false);
+        final View tabView = inflater.inflate(R.layout.tab_handling, container, false);
 
-        listView = view.findViewById(R.id.listview_handling);
+        SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
+        phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
+
+        listView = tabView.findViewById(R.id.listview_handling);
 
         adapterHandling = new AdapterHandling(this.getActivity());
 
@@ -57,7 +55,35 @@ public class TabHandling extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Order selectedOrder = orderList.get(position);
+                final int orderId = selectedOrder.getOrderID();
+                String originPlace = selectedOrder.getOriginPlace();
+                String destinationPlace = selectedOrder.getDestinationPlace();
+                String pickupTime = selectedOrder.getPickupTime();
+                String orderTime = selectedOrder.getOrderedTime();
 
+                String message = "- Tuyến đường: " + originPlace + " - " + destinationPlace + ".\n" +
+                        "- Thời điểm khởi hành: " + pickupTime + "\n" +
+                        "- Thời điểm đặt: " + orderTime;
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getResources().getString(R.string.cancel_order));
+                builder.setMessage(message);
+                builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        CancelOrder cancelOrder = new CancelOrder(orderId);
+                        cancelOrder.execute();
+                    }
+                });
+                builder.show();
             }
 
         });
@@ -67,7 +93,7 @@ public class TabHandling extends Fragment {
         ConnectToDb connectToDb = new ConnectToDb(this.getActivity());
         connectToDb.execute();
 
-        return view;
+        return tabView;
     }
 
 //    private ArrayList<Order> getOrdersFromServer(View view) {
@@ -115,6 +141,7 @@ public class TabHandling extends Fragment {
 
     private class ConnectToDb extends AsyncTask<Void, Void, ArrayList<Order>> {
         private Context activity;
+
         public ConnectToDb(Context context) {
             this.activity = context;
         }
@@ -123,9 +150,6 @@ public class TabHandling extends Fragment {
         protected ArrayList<Order> doInBackground(Void... voids) {
 
             orderList = new ArrayList<>();
-
-            SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
-            String phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
 
             StringBuilder builder = new StringBuilder();
             HttpURLConnection connection;
@@ -149,7 +173,7 @@ public class TabHandling extends Fragment {
                     JSONObject jsonResponse = new JSONObject(responseWaitingOrders);
                     JSONArray jsonArray = jsonResponse.getJSONArray("GetOrdersResult");
 
-                    for (int i = 0; i <jsonArray.length(); i++){
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject order = jsonArray.getJSONObject(i);
 
                         int orderID = order.getInt("id_dat_xe");
@@ -179,6 +203,91 @@ public class TabHandling extends Fragment {
         protected void onPostExecute(ArrayList<Order> orderList) {
             adapterHandling.addList(orderList);
             adapterHandling.notifyDataSetChanged();
+        }
+    }
+
+    private class CancelOrder extends AsyncTask<Void, Void, String> {
+        private int orderId;
+
+        public CancelOrder(int orderId) {
+            this.orderId = orderId;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            StringBuilder builder = new StringBuilder();
+            HttpURLConnection connection;
+
+            String webserviceUrl = getString(R.string.webservice_cancel_order);
+            URL url;
+            try {
+                url = new URL(webserviceUrl);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoInput(true);
+                connection.setDoOutput(true);
+
+                //OutputStream
+                OutputStream os = connection.getOutputStream();
+                BufferedWriter streamWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                streamWriter.write(ConvertMapObjectToEncodeUrl(orderId));
+
+                streamWriter.flush();
+                streamWriter.close();
+                os.close();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String line;
+                    if ((line = bufferedReader.readLine()) != null) {
+                        builder.append(line);
+                    }
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //response
+            if (builder == null) {
+                return null;
+            } else {
+                return builder.toString();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String response) {
+            AlertDialog.Builder responseBuilder = new AlertDialog.Builder(getActivity());
+            responseBuilder.setTitle(getResources().getString(R.string.cancel_response));
+            responseBuilder.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+
+            if (response.contains(getResources().getString(R.string.success_response))) {
+                responseBuilder.setMessage(getResources().getString(R.string.cancel_success));
+            } else {
+                responseBuilder.setMessage(getResources().getString(R.string.cancel_fail));
+            }
+            responseBuilder.show();
+        }
+
+        private String ConvertMapObjectToEncodeUrl(int orderId) {
+            StringBuilder result = new StringBuilder();
+            try {
+                result.append(URLEncoder.encode("orderId", "UTF-8"));
+                result.append("=");
+                result.append(URLEncoder.encode(String.valueOf(orderId), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return result.toString();
         }
     }
 }
