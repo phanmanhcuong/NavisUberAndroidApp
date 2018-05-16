@@ -84,6 +84,8 @@ public class FragmentShowMap extends DialogFragment {
             @Override
             public void onMapReady(GoogleMap ggMap) {
                 googleMap = ggMap;
+                googleMap.clear();
+
                 //askPermissionsAndShowMyLocation();
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 googleMap.getUiSettings().setZoomControlsEnabled(true);
@@ -93,8 +95,6 @@ public class FragmentShowMap extends DialogFragment {
 
             }
         });
-
-        //GetCarLocation getCarLocation = new GetCarLocation(view.getContext(), carId);
 
         //timer to request car's location and update every 5 seconds
         final Handler handler = new Handler();
@@ -185,7 +185,6 @@ public class FragmentShowMap extends DialogFragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             return carLocation;
         }
 
