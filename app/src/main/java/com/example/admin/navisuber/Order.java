@@ -7,8 +7,10 @@ public class Order {
     private String destinationPlace;
     private String pickupTime;
     private String orderedTime;
+    private String driverName;
+    private String driverPhoneNumber;
+    private String carPlate;
     private String carType;
-    //private int seatNumber;
 
     public Order(int orderID, int carID, String originPlace, String destinationPlace, String pickupTime, String orderedTime) {
         this.orderID = orderID;
@@ -17,7 +19,19 @@ public class Order {
         this.destinationPlace = destinationPlace;
         this.pickupTime = pickupTime;
         this.orderedTime = orderedTime;
-        //this.seatNumber = seatNumber;
+    }
+
+    public Order(int orderID, int carID, String originPlace, String destinationPlace, String pickupTime, String orderedTime, String driverName, String driverPhoneNumber, String carPlate, String carType) {
+        this.orderID = orderID;
+        this.carID = carID;
+        this.originPlace = originPlace;
+        this.destinationPlace = destinationPlace;
+        this.pickupTime = pickupTime;
+        this.orderedTime = orderedTime;
+        this.driverName = driverName;
+        this.driverPhoneNumber = driverPhoneNumber;
+        this.carPlate = carPlate;
+        this.carType = carType;
     }
 
     public int getOrderID() {
@@ -27,10 +41,6 @@ public class Order {
     public int getCarID() {
         return carID;
     }
-
-//    public int getSeatNumber() {
-//        return seatNumber;
-//    }
 
     public String getOriginPlace() {
         return originPlace;
@@ -46,5 +56,21 @@ public class Order {
 
     public String getOrderedTime() {
         return orderedTime;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public String getDriverPhoneNumber() {
+        return driverPhoneNumber;
+    }
+
+    public String getCarPlate() {
+        return carPlate;
+    }
+
+    public String getCarType() {
+        return carType;
     }
 }

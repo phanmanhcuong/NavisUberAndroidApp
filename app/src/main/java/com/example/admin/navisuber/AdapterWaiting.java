@@ -8,11 +8,11 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import java.util.ArrayList;
 
-public class AdapterHandling extends BaseAdapter {
+public class AdapterWaiting extends BaseAdapter {
     private Context context;
     private ArrayList<Order> orders;
 
-    public AdapterHandling(Context context) {
+    public AdapterWaiting(Context context) {
         this.context = context;
         orders = new ArrayList<>();
     }
@@ -41,7 +41,7 @@ public class AdapterHandling extends BaseAdapter {
 
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {
-        view = LayoutInflater.from(context).inflate(R.layout.order_in_listview_handling_layout, null);
+        view = LayoutInflater.from(context).inflate(R.layout.order_in_listview_waiting_layout, null);
 
         Order currentOrder = orders.get(position);
 
@@ -54,6 +54,14 @@ public class AdapterHandling extends BaseAdapter {
         TextView tv_orderedTime = view.findViewById(R.id.tv_ordered_time);
         tv_orderedTime.setText("- Thời điểm đặt: " + currentOrder.getOrderedTime());
 
+        TextView tv_driverName = view.findViewById(R.id.tv_driver_name);
+        tv_driverName.setText("- Lái xe: " + currentOrder.getDriverName());
+
+        TextView tv_driverPhoneNumber = view.findViewById(R.id.tv_driver_phone_number);
+        tv_driverPhoneNumber.setText("- Số điện thoại lái xe: " + currentOrder.getDriverPhoneNumber());
+
+        TextView tv_carPlate = view.findViewById(R.id.tv_car_plate);
+        tv_carPlate.setText("- Loại xe: " + currentOrder.getCarType() + " - Biển số xe: " + currentOrder.getCarPlate());
         return view;
     }
 }

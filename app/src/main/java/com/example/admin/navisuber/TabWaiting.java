@@ -29,7 +29,7 @@ public class TabWaiting extends Fragment {
     private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
     private static String phoneNumber;
     private static ListView listView;
-    private static AdapterHandling adapterWaiting;
+    private static AdapterWaiting adapterWaiting;
     private static ArrayList<Order> orderList;
 
     @Override
@@ -38,7 +38,7 @@ public class TabWaiting extends Fragment {
 
         listView = tabView.findViewById(R.id.listview_waiting);
 
-        adapterWaiting = new AdapterHandling(this.getActivity());
+        adapterWaiting = new AdapterWaiting(this.getActivity());
 
         listView.setAdapter(adapterWaiting);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -108,8 +108,12 @@ public class TabWaiting extends Fragment {
                         String destinationPlace = order.getString("diem_ket_thuc");
                         String orderedString = order.getString("thoi_diem_dat_xe");
                         String pickupString = order.getString("thoi_diem_khoi_hanh");
+                        String driverName = order.getString("ten_lai_xe");
+                        String driverPhoneNumber = order.getString("so_dien_thoai");
+                        String carPlate = order.getString("bien_kiem_soat");
+                        String carType = order.getString("loai_xe");
 
-                        Order waitingOrder = new Order(orderID, carID, originPlace.trim(), destinationPlace.trim(), pickupString, orderedString);
+                        Order waitingOrder = new Order(orderID, carID, originPlace.trim(), destinationPlace.trim(), pickupString, orderedString, driverName, driverPhoneNumber, carPlate, carType);
                         orderList.add(waitingOrder);
                     }
 

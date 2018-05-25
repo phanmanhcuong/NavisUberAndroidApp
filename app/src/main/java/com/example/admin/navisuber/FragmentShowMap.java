@@ -44,6 +44,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -77,6 +80,10 @@ public class FragmentShowMap extends DialogFragment {
 
         Button btnCancel = view.findViewById(R.id.btn_cancel);
         btnCancel.setOnClickListener(new CancelOrderListener());
+
+        Button btnFinishedConfirm = view.findViewById(R.id.btn_finish_confirm);
+        btnFinishedConfirm.setOnClickListener(new FinishedConfirmListener ());
+
         //set up for google map
         SupportMapFragment ggMapFragment = (SupportMapFragment)getActivity().getSupportFragmentManager().findFragmentById(R.id.fragment_ggmap);
 
@@ -327,4 +334,131 @@ public class FragmentShowMap extends DialogFragment {
             return result.toString();
         }
     }
+
+    private class FinishedConfirmListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Xác nhận hoàn thành chuyến");
+            builder.setMessage("Bạn muốn xác nhận chuyến xe đã hoàn thành ?");
+            builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+            builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                    Date currentTime = Calendar.getInstance().getTime();
+                    String formattedDate = format.format(currentTime);
+
+                    SendFinishedConfirm sendFinishedConfirm = new SendFinishedConfirm(orderId, formattedDate);
+                    sendFinishedConfirm.execute();
+                }
+            });
+            builder.show();
+        }
+
+        private class SendFinishedConfirm extends AsyncTask<Void, Void, String>{
+            int orderId;
+            String currentTime;
+
+            public SendFinishedConfirm(int orderId, String currentTime) {
+                this.orderId = orderId;
+                this.currentTime = currentTime;
+            }
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                StringBuilder builder = new StringBuilder();
+                HttpURLConnection connection;
+
+                String webserviceUrl = getString(R.string.webservice_finished_confirm);
+                URL url;
+                try {
+                    url = new URL(webserviceUrl);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoInput(true);
+                    connection.setDoOutput(true);
+
+                    //OutputStream
+                    OutputStream os = connection.getOutputStream();
+                    BufferedWriter streamWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                    streamWriter.write(ConvertMapObjectToEncodeUrl(orderId, currentTime));
+
+                    streamWriter.flush();
+                    streamWriter.close();
+                    os.close();
+
+                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                        String line;
+                        if ((line = bufferedReader.readLine()) != null) {
+                            builder.append(line);
+                        }
+                    }
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                //response
+                if (builder == null) {
+                    return null;
+                } else {
+                    return builder.toString();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String response) {
+                AlertDialog.Builder responseBuilder = new AlertDialog.Builder(getActivity());
+                responseBuilder.setTitle(getResources().getString(R.string.cancel_response));
+                responseBuilder.setNeutralButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                //close this map fragment
+                DialogFragment showmapFragment  = (DialogFragment) getActivity().getSupportFragmentManager().findFragmentByTag("map fragment");
+                showmapFragment.dismiss();
+                //show response dialog
+                if (response.contains(getResources().getString(R.string.success_response))) {
+                    responseBuilder.setMessage(getResources().getString(R.string.finished_confirm_success));
+                } else {
+                    responseBuilder.setMessage(getResources().getString(R.string.finished_confirm_fail));
+                }
+                responseBuilder.show();
+            }
+
+            private String ConvertMapObjectToEncodeUrl(int orderId, String currentTime) {
+                StringBuilder result = new StringBuilder();
+                try {
+                    //orderId
+                    result.append(URLEncoder.encode("orderId", "UTF-8"));
+                    result.append("=");
+                    result.append(URLEncoder.encode(String.valueOf(orderId), "UTF-8"));
+
+                    //currentTime
+                    result.append("&");
+                    result.append(URLEncoder.encode("finishTime", "UTF-8"));
+                    result.append("=");
+                    result.append(URLEncoder.encode(currentTime, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                return result.toString();
+            }
+        }
+    }
+
 }
