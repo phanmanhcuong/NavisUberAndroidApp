@@ -15,7 +15,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_cancel"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorRed"
         android:textColor="@color/colorWhite"
         android:text="Hủy chuyến"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_finish_confirm"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:text="Xác nhận hoàn thành chuyến"/>
 </LinearLayout>
