@@ -340,6 +340,7 @@ public class ShowOrderPathActivity extends AppCompatActivity {
         }
         return true;
     }
+
     private void askPermissionsAndShowMyLocation() {
         if(Build.VERSION.SDK_INT >= 23){
             //vị trí tương đối

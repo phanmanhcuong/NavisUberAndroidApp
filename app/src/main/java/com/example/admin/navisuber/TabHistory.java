@@ -34,9 +34,9 @@ public class TabHistory extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
-        final View tabView = inflater.inflate(R.layout.tab_waiting, container, false);
+        final View tabView = inflater.inflate(R.layout.tab_history, container, false);
 
-        listView = tabView.findViewById(R.id.listview_waiting);
+        listView = tabView.findViewById(R.id.listview_history);
 
         adapterWaiting = new AdapterWaiting(this.getActivity());
 

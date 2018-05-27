@@ -40,6 +40,7 @@
     <string name="webservice_get_car_location">http://navistargsht.cloudapp.net:6004/Service1.svc/GetCarLocation?carId=</string>
     <string name="webservice_get_waiting_orders">http://navistargsht.cloudapp.net:6004/Service1.svc/GetOrders?sdt_nguoi_dat=</string>
     <string name="webservice_cancel_order">http://navistargsht.cloudapp.net:6004/Service1.svc/CancelOrder</string>
+    <string name="webservice_finished_confirm">http://navistargsht.cloudapp.net:6004/Service1.svc/FinishedConfirm</string>
     <string name="webservice_response">Thông báo gửi yêu cầu</string>
     <string name="webservice_response_success">Yêu cầu xe thành công !</string>
     <string name="webservice_response_fail">Yêu cầu xe thất bại !</string>
@@ -50,6 +51,7 @@
     <string name="waiting_dialog_message">Chờ xử lí yêu cầu trong: </string>
     <string name="resend_order">Gửi lại yêu cầu</string>
     <string name="success_response">Success</string>
+    <string name="phone_number_already_exist">Phone Number Is Already Exist</string>
     <string name="fail_response">Fail</string>
     <string name="json_origin">originPlace</string>
     <string name="json_destination">destinationPlace</string>
@@ -60,7 +62,7 @@
     <string name="refreshed_token">refreshed_token</string>
     <string name="notification_data">data</string>
     <string name="notification_title">title</string>
-    <string name="notification_message">message</string>
+    <string name="notification_body">body</string>
     <string name="order_information">Thông tin đặt xe</string>
     <string name="waiting_for_handle">Đợi gán xe</string>
     <string name="waiting_for_car">Đợi xe</string>
@@ -77,6 +79,7 @@
     <string name="signup_tokenid">TokenId</string>
     <string name="signup_response">Thông báo đăng kí</string>
     <string name="signup_success">Đăng kí thành công !</string>
+    <string name="signup_confirm">Xác nhận đăng kí</string>
     <string name="signup_fail">Đăng kí thất bại !</string>
     <string name="car_location">Vị trí của xe</string>
     <string name="fragment_title">Vị trí xe</string>
@@ -84,6 +87,9 @@
     <string name="cancel_response">Thông báo hủy chuyến</string>
     <string name="cancel_success">Yêu cầu hủy chuyến thành công, chờ xử lí của admin</string>
     <string name="cancel_fail">Yêu cầu hủy chuyến thất bại</string>
+    <string name="finished_confirm_response">Thông báo xác nhận hoàn thành chuyến</string>
+    <string name="finished_confirm_success">Xác nhận hoàn thành chuyến thành công</string>
+    <string name="finished_confirm_fail">Không thể xác nhận hoàn thành chuyến trước thời điểm khởi hành</string>
     <string name="btn_date">Ngày khởi hành</string>
     <string name="btn_time">Giờ khởi hành</string>
     <string name="edit_user">Sửa thông tin cá nhân</string>

@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,13 +31,15 @@ public class SignUpActivity extends AppCompatActivity{
     private static final String PREFERENCES_PHONENUMBER = "PhoneNumber";
     private static final String PREFERENCES_NAME = "tokenIdPref";
     private static String phoneNumber;
+    private static String name;
+    private static String email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_layout);
 
-        ActionBar actionBar = getSupportActionBar();
+        ActionBar actionBar = this.getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         //reload user's infor to edittext
@@ -57,32 +61,49 @@ public class SignUpActivity extends AppCompatActivity{
 
     public void SendSignUp(View v){
         TextView tv_name = findViewById(R.id.tv_name);
-        String name = tv_name.getText().toString();
+        name = tv_name.getText().toString();
 
         TextView tv_phone_number = findViewById(R.id.tv_phone_number);
         phoneNumber = tv_phone_number.getText().toString();
 
         TextView tv_email = findViewById(R.id.tv_email);
-        String email = tv_email.getText().toString();
+        email = tv_email.getText().toString();
 
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
-        String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
+        final SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+        final String tokenID = sharedPreferences.getString(getResources().getString(R.string.refreshed_token), null);
 
         if(name != "" && phoneNumber != "" && email!= ""){
-            //save to reload when edit user information
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(getResources().getString(R.string.Name), name);
-            editor.putString(getString(R.string.PhoneNumber), phoneNumber);
-            editor.putString(getString(R.string.Email), email);
-            editor.commit();
+            AlertDialog.Builder builderRequest = new AlertDialog.Builder(SignUpActivity.this);
+            builderRequest.setTitle(getResources().getString(R.string.signup_confirm));
+            builderRequest.setMessage("Họ tên: " + name + "\nSố điện thoại: " + phoneNumber + "\nEmail: " + email );
+            builderRequest.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
 
-            HashMap<String, String> signupInfo = new HashMap<>();
-            signupInfo.put(getResources().getString(R.string.signup_name), name);
-            signupInfo.put(getResources().getString(R.string.signup_phonenumber), phoneNumber);
-            signupInfo.put(getResources().getString(R.string.signup_email), email);
-            signupInfo.put(getResources().getString(R.string.signup_tokenid), tokenID);
-            SignUpToWebService signUpToWebService = new SignUpToWebService(signupInfo);
-            signUpToWebService.execute();
+                }
+            });
+
+            builderRequest.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //save to reload when edit user information
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putString(getString(R.string.Name), name);
+//                    editor.putString(getString(R.string.PhoneNumber), phoneNumber);
+//                    editor.putString(getString(R.string.Email), email);
+//                    editor.commit();
+
+                    HashMap<String, String> signupInfo = new HashMap<>();
+                    signupInfo.put(getResources().getString(R.string.signup_name), name);
+                    signupInfo.put(getResources().getString(R.string.signup_phonenumber), phoneNumber);
+                    signupInfo.put(getResources().getString(R.string.signup_email), email);
+                    signupInfo.put(getResources().getString(R.string.signup_tokenid), tokenID);
+                    SignUpToWebService signUpToWebService = new SignUpToWebService(signupInfo);
+                    signUpToWebService.execute();
+                }
+            });
+
+            builderRequest.show();
         } else{
             AlertDialog.Builder warningDialog = new AlertDialog.Builder(SignUpActivity.this);
             warningDialog.setTitle(getResources().getString(R.string.warning_dialog));
@@ -163,10 +184,14 @@ public class SignUpActivity extends AppCompatActivity{
                 SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(getResources().getString(R.string.phone_number), phoneNumber);
+                editor.putString(getString(R.string.Name), name);
+                editor.putString(getString(R.string.PhoneNumber), phoneNumber);
+                editor.putString(getString(R.string.Email), email);
                 editor.commit();
-            } else {
-                responseBuilder.setMessage(getResources().getString(R.string.signup_fail));
+            } else if (response.contains(getString(R.string.phone_number_already_exist))){
+                responseBuilder.setMessage("Số điện thoại đã được đăng kí bởi tài khoản khác");
+            } else{
+                responseBuilder.setMessage(getString(R.string.signup_fail));
             }
             responseBuilder.show();
         }
@@ -187,5 +212,27 @@ public class SignUpActivity extends AppCompatActivity{
 
             return result.toString();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar_show_path, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.btn_detail_order:
+                Intent detailOrderIntent = new Intent(SignUpActivity.this, DetailCarOrderActivity.class);
+                startActivity(detailOrderIntent);
+                break;
+
+            case R.id.btn_order_info:
+                Intent orderStatusIntent = new Intent(SignUpActivity.this, OrderStatusActivity.class);
+                startActivity(orderStatusIntent);
+                break;
+        }
+        return true;
     }
 }

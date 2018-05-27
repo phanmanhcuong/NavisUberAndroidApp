@@ -11,8 +11,7 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="color_tabhandling">#A5DF00</color>
     <color name="color_tabwaiting">#01DF74</color>
-    <color name="color_tabhistory">#DF7401</color>
     <color name="color_tv_background">#FA8258</color>
     <color name="color_et_background">#5076C2</color>
-
+    <color name="color_tab_history">#BE81F7</color>
 </resources>

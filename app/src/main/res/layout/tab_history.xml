@@ -4,12 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:tag="waiting"
-    android:background="@color/color_tabwaiting">
+    android:background="@color/color_tab_history">
     <ListView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listview_waiting"
+        android:id="@+id/listview_history"
         android:layout_weight="1">
     </ListView>
 
