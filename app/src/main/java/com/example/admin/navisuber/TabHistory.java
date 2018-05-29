@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,25 +37,35 @@ public class TabHistory extends Fragment {
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         final View tabView = inflater.inflate(R.layout.tab_history, container, false);
 
+        final SwipeRefreshLayout swipeRefreshLayout = tabView.findViewById(R.id.swipe_tab_history);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                ConnectToDb connectToDb = new ConnectToDb(getActivity());
+                connectToDb.execute();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
         listView = tabView.findViewById(R.id.listview_history);
 
         adapterWaiting = new AdapterWaiting(this.getActivity());
 
         listView.setAdapter(adapterWaiting);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, final View view, int position, long id) {
-                //get selected item
-                Order selectedOrder = orderList.get(position);
-                int currentCarId = selectedOrder.getCarID();
-                int orderId = selectedOrder.getOrderID();
-
-                //dialog fragment for google map
-                android.support.v4.app.FragmentManager fm = getActivity().getSupportFragmentManager();
-                FragmentShowMap fragmentShowMap = FragmentShowMap.newInstance(currentCarId, orderId, selectedOrder.getPickupTime());
-                fragmentShowMap.show(fm, "map fragment");
-            }
-        });
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, final View view, int position, long id) {
+//                //get selected item
+//                Order selectedOrder = orderList.get(position);
+//                int currentCarId = selectedOrder.getCarID();
+//                int orderId = selectedOrder.getOrderID();
+//
+//                //dialog fragment for google map
+//                android.support.v4.app.FragmentManager fm = getActivity().getSupportFragmentManager();
+//                FragmentShowMap fragmentShowMap = FragmentShowMap.newInstance(currentCarId, orderId, selectedOrder.getPickupTime());
+//                fragmentShowMap.show(fm, "map fragment");
+//            }
+//        });
 
         //get data from server to add to adapter
         ConnectToDb connectToDb = new ConnectToDb(this.getActivity());
@@ -131,6 +142,7 @@ public class TabHistory extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<Order> orderList) {
+            adapterWaiting.removeList();
             adapterWaiting.addList(orderList);
             adapterWaiting.notifyDataSetChanged();
         }

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +32,19 @@ public class TabWaiting extends Fragment {
     private static ListView listView;
     private static AdapterWaiting adapterWaiting;
     private static ArrayList<Order> orderList;
-
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         final View tabView = inflater.inflate(R.layout.tab_waiting, container, false);
+
+        final SwipeRefreshLayout swipeRefreshLayout = tabView.findViewById(R.id.swipe_tab_waiting);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                ConnectToDb connectToDb = new ConnectToDb(getActivity());
+                connectToDb.execute();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
         listView = tabView.findViewById(R.id.listview_waiting);
 
@@ -131,6 +141,7 @@ public class TabWaiting extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<Order> orderList) {
+            adapterWaiting.removeList();
             adapterWaiting.addList(orderList);
             adapterWaiting.notifyDataSetChanged();
         }

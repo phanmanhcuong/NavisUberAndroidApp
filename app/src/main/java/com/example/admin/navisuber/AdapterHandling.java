@@ -24,6 +24,10 @@ public class AdapterHandling extends BaseAdapter {
         }
     }
 
+    public void removeList(){
+        orders.clear();
+    }
+
     @Override
     public int getCount() {
         return orders.size();

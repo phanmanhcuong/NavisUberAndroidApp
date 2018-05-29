@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:layout_width="match_parent"
+<android.support.v4.widget.SwipeRefreshLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:tag="waiting"
+    android:id="@+id/swipe_tab_history"
     android:background="@color/color_tab_history">
     <ListView
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -13,4 +13,4 @@
         android:layout_weight="1">
     </ListView>
 
-</LinearLayout>
+</android.support.v4.widget.SwipeRefreshLayout>

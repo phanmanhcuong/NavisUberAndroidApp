@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +47,16 @@ public class TabHandling extends Fragment {
 
         SharedPreferences sharedPreferencesPhoneNumber = getContext().getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
         phoneNumber = sharedPreferencesPhoneNumber.getString(getResources().getString(R.string.phone_number), null);
+
+        final SwipeRefreshLayout swipeRefreshLayout = tabView.findViewById(R.id.swipe_tab_handling);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                ConnectToDb connectToDb = new ConnectToDb(getActivity());
+                connectToDb.execute();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
         listView = tabView.findViewById(R.id.listview_handling);
 
@@ -95,49 +106,6 @@ public class TabHandling extends Fragment {
 
         return tabView;
     }
-
-//    private ArrayList<Order> getOrdersFromServer(View view) {
-//        ArrayList<Order> orders = null;
-//
-//        SharedPreferences sharedPreferences = view.getContext().getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
-//        String tokenID = sharedPreferences.getString(view.getContext().getResources().getString(R.string.refreshed_token), null);
-//
-//        Date currentTime = Calendar.getInstance().getTime();
-//
-//        try {
-//            Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
-//
-//            //Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://ADMIN\\SQLEXPRESS;test_device_db;Integrated Security=True");
-//            String servername = view.getContext().getResources().getString(R.string.server_name);
-//            String dbname = view.getContext().getResources().getString(R.string.database_name);
-//            String username = view.getContext().getResources().getString(R.string.username);
-//            String password = view.getContext().getResources().getString(R.string.password);
-//
-//            Connection DbConn = DriverManager.getConnection("jdbc:jtds:sqlserver://" + servername + ";databaseName=" + dbname + ";user=" + username
-//                    + ";password=" + password);
-//
-//            Statement stmt = DbConn.createStatement();
-//            ResultSet resultSet = stmt.executeQuery("SELECT id_dat_xe, diem_bat_dau, diem_ket_thuc, thoi_diem_dat_xe," +
-//                    " thoi_diem_khoi_hanh, so_ghe FROM dbo.Lst_DatXe WHERE registrationID = '" + tokenID + "' AND status = 0 AND thoi_diem_khoi_hanh <= " + currentTime);
-//            while (resultSet.next()) {
-//                int orderID = resultSet.getInt("id_da_xe");
-//                String originPlace = resultSet.getString("diem_bat_dau");
-//                String destinationPlace = resultSet.getString("diem_ket_thuc");
-//                Date orderedtime = resultSet.getDate("thoi_diem_dat_xe");
-//                Date pickupTime = resultSet.getDate("thoi_diem_khoi_hanh");
-//                int seatNumber = resultSet.getInt("so_ghe");
-//
-//                Order order = new Order(orderID, originPlace, destinationPlace, orderedtime, pickupTime, seatNumber);
-//                orders.add(order);
-//            }
-//
-//            DbConn.close();
-//
-//        } catch (Exception e) {
-//            Log.e("error", e.toString());
-//        }
-//        return orders;
-//    }
 
     private class ConnectToDb extends AsyncTask<Void, Void, ArrayList<Order>> {
         private Context activity;
@@ -201,6 +169,7 @@ public class TabHandling extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<Order> orderList) {
+            adapterHandling.removeList();
             adapterHandling.addList(orderList);
             adapterHandling.notifyDataSetChanged();
         }

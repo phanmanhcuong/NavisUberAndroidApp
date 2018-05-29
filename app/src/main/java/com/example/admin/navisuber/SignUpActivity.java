@@ -43,7 +43,7 @@ public class SignUpActivity extends AppCompatActivity{
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         //reload user's infor to edittext
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFERENCES_PHONENUMBER, MODE_PRIVATE);
         String name = sharedPreferences.getString(getString(R.string.Name), null);
         String phonenumber = sharedPreferences.getString(getString(R.string.PhoneNumber), null);
         String email = sharedPreferences.getString(getString(R.string.Email), null);
@@ -187,7 +187,7 @@ public class SignUpActivity extends AppCompatActivity{
                 editor.putString(getString(R.string.Name), name);
                 editor.putString(getString(R.string.PhoneNumber), phoneNumber);
                 editor.putString(getString(R.string.Email), email);
-                editor.commit();
+                editor.apply();
             } else if (response.contains(getString(R.string.phone_number_already_exist))){
                 responseBuilder.setMessage("Số điện thoại đã được đăng kí bởi tài khoản khác");
             } else{
